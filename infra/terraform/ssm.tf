@@ -25,13 +25,9 @@ resource "aws_ssm_parameter" "slack_app_token" {
 resource "aws_ssm_parameter" "database_url" {
   name  = "/${local.name_prefix}/DATABASE_URL"
   type  = "SecureString"
-  value = "placeholder"
+  value = "postgresql://${var.db_username}:${urlencode(var.db_password)}@${aws_db_instance.main.endpoint}/${var.db_name}"
 
   tags = { Name = "${local.name_prefix}-database-url" }
-
-  lifecycle {
-    ignore_changes = [value]
-  }
 }
 
 resource "aws_ssm_parameter" "dynamodb_table_name" {
