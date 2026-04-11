@@ -1,0 +1,92 @@
+version: "3"
+
+includes:
+  bot:
+    taskfile: packages/bot/Taskfile.yml
+    dir: packages/bot
+  server:
+    taskfile: packages/server/Taskfile.yml
+    dir: packages/server
+
+tasks:
+  dev:
+    desc: 全パッケージ並列起動（mprocs）
+    cmds:
+      - mprocs "task bot:dev" "task server:dev"
+
+  dev:bot:
+    desc: bot パッケージのみ起動
+    cmds:
+      - task: bot:dev
+
+  dev:server:
+    desc: server パッケージのみ起動
+    cmds:
+      - task: server:dev
+
+  dev:local:
+    desc: bot ローカル開発ハーネス起動（Slack 不要）
+    cmds:
+      - task: bot:dev:local
+
+  build:
+    desc: 全パッケージ TypeScript ビルド
+    cmds:
+      - pnpm -r build
+
+  lint:
+    desc: oxlint でリント
+    cmds:
+      - pnpm lint
+
+  fmt:
+    desc: oxfmt でフォーマット
+    cmds:
+      - pnpm fmt
+
+  typecheck:
+    desc: 型チェック
+    cmds:
+      - pnpm -r typecheck
+
+  test:
+    desc: vitest でテスト実行
+    cmds:
+      - pnpm -r test
+
+  setup:
+    desc: 初期セットアップ
+    cmds:
+      - pnpm install
+      - cp -n .env.local.example .env.local
+
+  docker:build:
+    desc: Docker イメージビルド
+    cmds:
+      - docker build -t slack-bot-template .
+
+  docker:run:
+    desc: Docker コンテナ実行
+    cmds:
+      - docker run --rm --env-file .env.local slack-bot-template
+
+  infra:init:
+    desc: Terraform 初期化
+    cmds:
+      - terraform -chdir=infra/terraform init
+
+  infra:plan:
+    desc: Terraform 実行計画
+    cmds:
+      - terraform -chdir=infra/terraform plan
+
+  infra:apply:
+    desc: Terraform 適用
+    cmds:
+      - terraform -chdir=infra/terraform apply
+
+  deploy:
+    desc: ecspresso でデプロイ
+    dir: infra/ecspresso
+    cmds:
+      - ecspresso deploy

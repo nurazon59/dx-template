@@ -1,69 +1,7 @@
 [tools]
 node = "22"
 pnpm = "latest"
+task = "latest"
+mprocs = "latest"
 oxfmt = "latest"
 oxlint = "latest"
-
-[tasks.dev]
-run = "pnpm dev"
-description = "全パッケージ並列起動（tsx watch）"
-
-[tasks."dev:bot"]
-run = "pnpm dev:bot"
-description = "bot パッケージのみ起動"
-
-[tasks."dev:server"]
-run = "pnpm dev:server"
-description = "server パッケージのみ起動"
-
-[tasks."dev:local"]
-run = "pnpm dev:local"
-description = "bot ローカル開発ハーネス起動（Slack 不要）"
-
-[tasks.build]
-run = "pnpm build"
-description = "全パッケージ TypeScript ビルド"
-
-[tasks.lint]
-run = "pnpm lint"
-description = "oxlintでリント"
-
-[tasks.fmt]
-run = "pnpm fmt"
-description = "oxfmtでフォーマット"
-
-[tasks.typecheck]
-run = "pnpm typecheck"
-description = "型チェック"
-
-[tasks.test]
-run = "pnpm test"
-description = "vitestでテスト実行"
-
-[tasks.setup]
-run = "pnpm install && cp -n .env.local.example .env.local"
-description = "初期セットアップ"
-
-[tasks."docker:build"]
-run = "docker build -t slack-bot-template ."
-description = "Docker イメージビルド"
-
-[tasks."docker:run"]
-run = "docker run --rm --env-file .env.local slack-bot-template"
-description = "Docker コンテナ実行"
-
-[tasks."infra:init"]
-run = "terraform -chdir=infra/terraform init"
-description = "Terraform 初期化"
-
-[tasks."infra:plan"]
-run = "terraform -chdir=infra/terraform plan"
-description = "Terraform 実行計画"
-
-[tasks."infra:apply"]
-run = "terraform -chdir=infra/terraform apply"
-description = "Terraform 適用"
-
-[tasks.deploy]
-run = "cd infra/ecspresso && ecspresso deploy"
-description = "ecspresso でデプロイ"

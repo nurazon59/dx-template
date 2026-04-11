@@ -4,7 +4,7 @@ Slack Bolt for JavaScript (TypeScript) のボットテンプレート。Socket M
 
 ## 必要なもの
 
-- [mise](https://mise.jdx.dev/) (Node.js 22 + oxlint + oxfmt を管理)
+- [mise](https://mise.jdx.dev/) (Node.js 22 + go-task + oxlint + oxfmt を管理)
 - [pnpm](https://pnpm.io/)
 - Slack App (Socket Mode 有効)
 
@@ -12,7 +12,7 @@ Slack Bolt for JavaScript (TypeScript) のボットテンプレート。Socket M
 
 ```sh
 mise install
-mise run setup   # pnpm install + .env.local 作成
+task setup   # pnpm install + .env.local 作成
 ```
 
 `.env.local` に Slack のトークンを設定する:
@@ -25,14 +25,14 @@ SLACK_APP_TOKEN=xapp-your-app-token
 ## 開発
 
 ```sh
-mise run dev              # 全パッケージ並列起動
-mise run dev:bot          # bot のみ起動
-mise run dev:server       # server のみ起動
-mise run dev:local        # ローカル開発ハーネス（Slack 不要）
-mise run lint             # oxlint
-mise run fmt              # oxfmt
-mise run typecheck        # tsc --noEmit (全パッケージ)
-mise run test             # vitest run (全パッケージ)
+task dev              # 全パッケージ並列起動
+task dev:bot          # bot のみ起動
+task dev:server       # server のみ起動
+task dev:local        # ローカル開発ハーネス（Slack 不要）
+task lint             # oxlint
+task fmt              # oxfmt
+task typecheck        # tsc --noEmit (全パッケージ)
+task test             # vitest run (全パッケージ)
 ```
 
 ## プロジェクト構成
@@ -75,7 +75,7 @@ infra/
 Slack App のトークンなしでリスナーの動作確認ができるローカルサーバー。リスナー関数をモック引数で呼び出し、Block Kit JSON レスポンスを返す。
 
 ```sh
-mise run dev:local    # http://localhost:4000 で起動
+task dev:local    # http://localhost:4000 で起動
 
 # コマンドテスト
 curl -s -X POST http://localhost:4000/commands/ping | jq
@@ -101,15 +101,14 @@ pnpm test:watch     # ウォッチモード
 ## ビルド・本番起動
 
 ```sh
-mise run build    # tsc → dist/
-mise run start    # node dist/index.js
+task build    # tsc → dist/
 ```
 
 ## Docker
 
 ```sh
-mise run docker:build    # イメージビルド
-mise run docker:run      # コンテナ実行（.env.local を使用）
+task docker:build    # イメージビルド
+task docker:run      # コンテナ実行（.env.local を使用）
 ```
 
 ## インフラ (AWS)
@@ -129,9 +128,9 @@ Terraform + ecspresso で AWS にデプロイする。Socket Mode のため NAT 
 
 ```sh
 # 1. Terraform 初期化・適用
-mise run infra:init
-mise run infra:plan
-mise run infra:apply
+task infra:init
+task infra:plan
+task infra:apply
 
 # 2. SSM にトークン設定（初回のみ）
 aws ssm put-parameter \
@@ -147,7 +146,7 @@ docker tag slack-bot-template:latest <account-id>.dkr.ecr.ap-northeast-1.amazona
 docker push <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/slack-bot-template:latest
 
 # 4. ecspresso デプロイ
-mise run deploy
+task deploy
 ```
 
 ### S3 backend への移行

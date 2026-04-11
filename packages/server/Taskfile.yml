@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  dev:
+    desc: tsx watch で起動
+    cmds:
+      - pnpm dev
+
+  build:
+    desc: TypeScript ビルド
+    cmds:
+      - pnpm build
+
+  start:
+    desc: ビルド済みアプリ起動
+    cmds:
+      - pnpm start
+
+  typecheck:
+    desc: 型チェック
+    cmds:
+      - pnpm typecheck
+
+  test:
+    desc: vitest でテスト実行
+    cmds:
+      - pnpm test
+
+  test:watch:
+    desc: vitest ウォッチモード
+    cmds:
+      - pnpm test:watch
