@@ -1,23 +1,18 @@
-import { eq } from "drizzle-orm";
-import { users } from "../db/schema.js";
 import type { Database } from "../lib/context.js";
 import { AppError } from "../lib/errors.js";
+import * as usersRepo from "../repositories/users.js";
 
 export function listUsers(db: Database) {
-  return db.select().from(users);
+  return usersRepo.findAll(db);
 }
 
 export async function createUser(
   db: Database,
   input: { slackUserId: string; displayName: string },
 ) {
-  const existing = await db
-    .select()
-    .from(users)
-    .where(eq(users.slackUserId, input.slackUserId))
-    .limit(1);
+  const existing = await usersRepo.findBySlackUserId(db, input.slackUserId);
 
-  if (existing.length > 0) {
+  if (existing) {
     throw new AppError(
       "USER_ALREADY_EXISTS",
       `slackUserId=${input.slackUserId} は既に登録済みです`,
@@ -25,23 +20,14 @@ export async function createUser(
     );
   }
 
-  const [user] = await db.insert(users).values(input).returning();
-  return user;
+  return usersRepo.insert(db, input);
 }
 
 export async function findBySlackUserId(db: Database, slackUserId: string) {
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.slackUserId, slackUserId))
-    .limit(1);
+  const user = await usersRepo.findBySlackUserId(db, slackUserId);
 
   if (!user) {
-    throw new AppError(
-      "USER_NOT_FOUND",
-      `slackUserId=${slackUserId} が見つかりません`,
-      404,
-    );
+    throw new AppError("USER_NOT_FOUND", `slackUserId=${slackUserId} が見つかりません`, 404);
   }
 
   return user;

@@ -1,35 +1,34 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Database } from "../lib/context.js";
 import { AppError } from "../lib/errors.js";
+
+vi.mock("../repositories/users.js", () => ({
+  findAll: vi.fn(),
+  findBySlackUserId: vi.fn(),
+  insert: vi.fn(),
+}));
+
+import * as usersRepo from "../repositories/users.js";
 import { createUser, findBySlackUserId, listUsers } from "./users.js";
 
-function createMockDb({
-  selectResult = [] as unknown[],
-  insertResult = [] as unknown[],
-} = {}) {
-  function makeChain(result: unknown[]) {
-    const promise = Promise.resolve(result) as Promise<unknown[]> &
-      Record<string, ReturnType<typeof vi.fn>>;
-    for (const m of ["from", "where", "limit", "values", "returning"]) {
-      promise[m] = vi.fn(() => makeChain(result));
-    }
-    return promise;
-  }
-  return {
-    select: vi.fn(() => makeChain(selectResult)),
-    insert: vi.fn(() => makeChain(insertResult)),
-  } as unknown as Database;
-}
+const mockFindAll = vi.mocked(usersRepo.findAll);
+const mockFindBySlackUserId = vi.mocked(usersRepo.findBySlackUserId);
+const mockInsert = vi.mocked(usersRepo.insert);
+
+const db = {} as Database;
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
 describe("listUsers", () => {
   it("ユーザー一覧を返す", async () => {
-    const mockUsers = [
-      { id: "1", slackUserId: "U1", displayName: "Test" },
-    ];
-    const db = createMockDb({ selectResult: mockUsers });
+    const mockUsers = [{ id: "1", slackUserId: "U1", displayName: "Test" }];
+    mockFindAll.mockResolvedValue(mockUsers as never);
 
     const result = await listUsers(db);
 
+    expect(mockFindAll).toHaveBeenCalledWith(db);
     expect(result).toEqual(mockUsers);
   });
 });
@@ -43,19 +42,22 @@ describe("createUser", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    const db = createMockDb({ selectResult: [], insertResult: [newUser] });
+    mockFindBySlackUserId.mockResolvedValue(undefined);
+    mockInsert.mockResolvedValue(newUser as never);
 
     const result = await createUser(db, {
       slackUserId: "U1",
       displayName: "Test",
     });
 
+    expect(mockFindBySlackUserId).toHaveBeenCalledWith(db, "U1");
+    expect(mockInsert).toHaveBeenCalledWith(db, { slackUserId: "U1", displayName: "Test" });
     expect(result).toEqual(newUser);
   });
 
   it("既存ユーザーがいる場合は AppError(409) を投げる", async () => {
     const existing = { id: "1", slackUserId: "U1", displayName: "Existing" };
-    const db = createMockDb({ selectResult: [existing] });
+    mockFindBySlackUserId.mockResolvedValue(existing as never);
 
     try {
       await createUser(db, { slackUserId: "U1", displayName: "Test" });
@@ -65,13 +67,15 @@ describe("createUser", () => {
       expect((e as AppError).status).toBe(409);
       expect((e as AppError).code).toBe("USER_ALREADY_EXISTS");
     }
+
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 });
 
 describe("findBySlackUserId", () => {
   it("ユーザーを返す", async () => {
     const user = { id: "1", slackUserId: "U1", displayName: "Test" };
-    const db = createMockDb({ selectResult: [user] });
+    mockFindBySlackUserId.mockResolvedValue(user as never);
 
     const result = await findBySlackUserId(db, "U1");
 
@@ -79,7 +83,7 @@ describe("findBySlackUserId", () => {
   });
 
   it("見つからない場合は AppError(404) を投げる", async () => {
-    const db = createMockDb({ selectResult: [] });
+    mockFindBySlackUserId.mockResolvedValue(undefined);
 
     try {
       await findBySlackUserId(db, "UNKNOWN");
