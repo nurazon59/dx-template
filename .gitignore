@@ -2,3 +2,9 @@ node_modules/
 dist/
 .env.local
 zzz/
+
+# Terraform
+infra/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
