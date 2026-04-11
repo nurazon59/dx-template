@@ -6,14 +6,14 @@ SPA フロントエンド（React 19 + Vite + Chakra UI v3 + TanStack Router）
 
 - エントリポイント: `src/main.tsx`
 - ルーティング: TanStack Router（file-based、`src/routes/`）
-- API クライアント: Hono RPC（`src/lib/api.ts`）、パスは `client.api.*` でアクセス
-- データフェッチ: TanStack Query v5（Suspense ベース）
+- API クライアント: Orval 生成 React Query hooks（`src/lib/api/generated.ts`）
+- データフェッチ: TanStack Query v5（Suspense ベース、Orval 生成 hooks を利用）
 
 ## データフェッチ規約
 
-- `src/features/<domain>/api/` に 1 ファイル 1 フック
-- 読み取り: `useSuspenseQuery`、書き込み: `useMutation`
-- queryKey は各フック内で定義（汎用ラッパーは作らない）
+- 読み取り: Orval 生成の Suspense hook、書き込み: Orval 生成の mutation hook
+- queryKey は Orval 生成の `get*QueryKey` / `get*QueryOptions` を利用
+- 手書き hook は、返り値整形や invalidate などのドメイン固有処理が必要な場合だけ追加
 - QueryClient シングルトン: `src/lib/query-client.ts`
 
 ## 開発コマンド
