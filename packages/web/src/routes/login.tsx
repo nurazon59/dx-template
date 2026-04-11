@@ -1,9 +1,14 @@
 import { Box, Button, Container, Field, Heading, Input, Stack, Text } from "@chakra-ui/react";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { authClient } from "../lib/auth";
 
-export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
-  const [name, setName] = useState("");
+export const Route = createFileRoute("/login")({
+  component: LoginPage,
+});
+
+function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,15 +19,16 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
     setError("");
     setLoading(true);
 
-    const { error: signUpError } = await authClient.signUp.email({
-      name,
+    const { error: signInError } = await authClient.signIn.email({
       email,
       password,
     });
 
     setLoading(false);
-    if (signUpError) {
-      setError(signUpError.message ?? "サインアップに失敗しました");
+    if (signInError) {
+      setError(signInError.message ?? "ログインに失敗しました");
+    } else {
+      await router.navigate({ to: "/" });
     }
   };
 
@@ -30,21 +36,11 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
     <Container maxW="sm" py={20}>
       <Stack gap={6}>
         <Heading size="xl" textAlign="center">
-          サインアップ
+          ログイン
         </Heading>
 
         <Box as="form" onSubmit={handleSubmit}>
           <Stack gap={4}>
-            <Field.Root>
-              <Field.Label>名前</Field.Label>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </Field.Root>
-
             <Field.Root>
               <Field.Label>メールアドレス</Field.Label>
               <Input
@@ -62,7 +58,6 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={8}
               />
             </Field.Root>
 
@@ -73,16 +68,16 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
             )}
 
             <Button type="submit" colorPalette="blue" loading={loading} width="full">
-              サインアップ
+              ログイン
             </Button>
           </Stack>
         </Box>
 
         <Text textAlign="center" fontSize="sm">
-          アカウントをお持ちの方は{" "}
-          <Button variant="plain" size="sm" onClick={onSwitchToLogin} p={0}>
-            ログイン
-          </Button>
+          アカウントをお持ちでない方は{" "}
+          <Link to="/signup" style={{ color: "var(--chakra-colors-blue-500)" }}>
+            サインアップ
+          </Link>
         </Text>
       </Stack>
     </Container>
