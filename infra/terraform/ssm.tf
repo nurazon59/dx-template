@@ -25,7 +25,7 @@ resource "aws_ssm_parameter" "slack_app_token" {
 resource "aws_ssm_parameter" "database_url" {
   name  = "/${local.name_prefix}/DATABASE_URL"
   type  = "SecureString"
-  value = "postgresql://${var.db_username}:${urlencode(var.db_password)}@${aws_db_instance.main.endpoint}/${var.db_name}"
+  value = "postgresql://${var.db_username}:${urlencode(var.db_password)}@${aws_db_instance.main.endpoint}/${var.db_name}?sslmode=require"
 
   tags = { Name = "${local.name_prefix}-database-url" }
 }
