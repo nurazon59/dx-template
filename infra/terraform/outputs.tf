@@ -58,11 +58,6 @@ output "private_subnet_ids" {
   value       = aws_subnet.private[*].id
 }
 
-output "alb_dns_name" {
-  description = "ALB DNS 名"
-  value       = aws_lb.server.dns_name
-}
-
 output "rds_endpoint" {
   description = "RDS エンドポイント"
   value       = aws_db_instance.main.endpoint

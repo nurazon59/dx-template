@@ -126,12 +126,17 @@ tasks:
   infra:plan:
     desc: Terraform 実行計画
     cmds:
-      - terraform -chdir=infra/terraform plan
+      - terraform -chdir=infra/terraform plan -var-file=envs/staging.tfvars
 
   infra:apply:
     desc: Terraform 適用
     cmds:
-      - terraform -chdir=infra/terraform apply
+      - terraform -chdir=infra/terraform apply -var-file=envs/staging.tfvars
+
+  infra:destroy:
+    desc: Terraform リソース削除
+    cmds:
+      - terraform -chdir=infra/terraform destroy -var-file=envs/staging.tfvars
 
   deploy:bot:
     desc: ecspresso で slack-bot デプロイ
