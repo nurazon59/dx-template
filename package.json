@@ -4,17 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
     "lint": "oxlint",
-    "fmt": "oxfmt --write packages/",
-    "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
-    "dev:bot": "pnpm --filter @dx-template/slack-bot dev",
-    "dev:server": "pnpm --filter @dx-template/server dev",
-    "dev:web": "pnpm --filter @dx-template/web dev",
-    "dev:local": "pnpm --filter @dx-template/slack-bot dev:local",
-    "gen": "pnpm -F @dx-template/server generate:openapi && pnpm -F @dx-template/web generate:api"
+    "fmt": "oxfmt --write packages/"
   },
   "devDependencies": {
     "oxlint": "^1.1.0"

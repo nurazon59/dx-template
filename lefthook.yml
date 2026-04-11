@@ -12,8 +12,8 @@ pre-push:
   parallel: true
   commands:
     test:
-      run: pnpm test
+      run: task test
     build:
-      run: pnpm build
+      run: task build
     typecheck:
-      run: pnpm typecheck
+      run: task typecheck

@@ -30,3 +30,9 @@ tasks:
     desc: vitest ウォッチモード
     cmds:
       - pnpm test:watch
+
+  generate:api:
+    desc: API クライアント生成
+    cmds:
+      - pnpm generate:api
+      - pnpm exec oxfmt --write src/lib/api/generated.ts
