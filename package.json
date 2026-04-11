@@ -12,6 +12,7 @@
     "test": "pnpm -r test",
     "dev:bot": "pnpm --filter @dx-template/slack-bot dev",
     "dev:server": "pnpm --filter @dx-template/server dev",
+    "dev:web": "pnpm --filter @dx-template/web dev",
     "dev:local": "pnpm --filter @dx-template/slack-bot dev:local"
   },
   "devDependencies": {

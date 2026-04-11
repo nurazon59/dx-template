@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  dev:
+    desc: Vite 開発サーバー起動
+    cmds:
+      - pnpm dev
+
+  build:
+    desc: Vite ビルド
+    cmds:
+      - pnpm build
+
+  preview:
+    desc: ビルド済みアプリプレビュー
+    cmds:
+      - pnpm preview
+
+  typecheck:
+    desc: 型チェック
+    cmds:
+      - pnpm typecheck
+
+  test:
+    desc: vitest でテスト実行
+    cmds:
+      - pnpm test
+
+  test:watch:
+    desc: vitest ウォッチモード
+    cmds:
+      - pnpm test:watch

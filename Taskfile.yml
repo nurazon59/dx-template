@@ -7,12 +7,15 @@ includes:
   server:
     taskfile: packages/server/Taskfile.yml
     dir: packages/server
+  web:
+    taskfile: packages/web/Taskfile.yml
+    dir: packages/web
 
 tasks:
   dev:
     desc: 全パッケージ並列起動（mprocs）
     cmds:
-      - mprocs "task bot:dev" "task server:dev"
+      - mprocs "task bot:dev" "task server:dev" "task web:dev"
 
   dev:bot:
     desc: bot パッケージのみ起動
@@ -23,6 +26,11 @@ tasks:
     desc: server パッケージのみ起動
     cmds:
       - task: server:dev
+
+  dev:web:
+    desc: web パッケージのみ起動
+    cmds:
+      - task: web:dev
 
   dev:local:
     desc: bot ローカル開発ハーネス起動（Slack 不要）
