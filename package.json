@@ -4,23 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
     "lint": "oxlint",
-    "fmt": "oxfmt --write src/",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@slack/bolt": "^4.3.0",
-    "slack-block-builder": "^2.8.0"
+    "fmt": "oxfmt --write packages/",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "dev:bot": "pnpm --filter @slack-bot/bot dev",
+    "dev:server": "pnpm --filter @slack-bot/server dev"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.4"
+    "oxlint": "^1.1.0"
   }
 }
