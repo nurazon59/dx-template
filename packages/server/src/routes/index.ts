@@ -1,16 +1,59 @@
 import { Hono } from "hono";
+import { describeRoute, resolver } from "hono-openapi";
+import { z } from "zod";
 import type { Env } from "../lib/context.js";
+import { AuthUserSchema } from "../schemas/auth.js";
+import { ErrorSchema } from "../schemas/error.js";
 import { requireAuth } from "../middleware/auth.js";
 import { usersRoute } from "./users.js";
 
 const app = new Hono<Env>()
-  .get("/health", (c) => c.json({ status: "ok" }))
-  .get("/me", requireAuth, (c) => {
-    const user = c.get("user")!;
-    return c.json({ user });
-  })
+  .get(
+    "/health",
+    describeRoute({
+      tags: ["System"],
+      responses: {
+        200: {
+          description: "ヘルスチェック",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ status: z.literal("ok") })),
+            },
+          },
+        },
+      },
+    }),
+    (c) => c.json({ status: "ok" as const }),
+  )
+  .get(
+    "/me",
+    describeRoute({
+      tags: ["Auth"],
+      responses: {
+        200: {
+          description: "認証済みユーザー情報",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ user: AuthUserSchema })),
+            },
+          },
+        },
+        401: {
+          description: "未認証",
+          content: {
+            "application/json": {
+              schema: resolver(ErrorSchema),
+            },
+          },
+        },
+      },
+    }),
+    requireAuth,
+    (c) => {
+      const user = c.get("user")!;
+      return c.json({ user });
+    },
+  )
   .route("/users", usersRoute);
-
-export type AppRoutes = typeof app;
 
 export { app as routes };
