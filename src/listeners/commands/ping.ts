@@ -1,7 +1,4 @@
-import type {
-  AllMiddlewareArgs,
-  SlackCommandMiddlewareArgs,
-} from "@slack/bolt";
+import type { AllMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
 import { Message, Section } from "slack-block-builder";
 
 export async function ping({
