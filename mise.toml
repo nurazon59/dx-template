@@ -1,0 +1,36 @@
+[tools]
+node = "22"
+oxfmt = "latest"
+oxlint = "latest"
+
+[tasks.dev]
+run = "pnpm dev"
+description = "開発サーバー起動（tsx watch）"
+
+[tasks.build]
+run = "pnpm build"
+description = "TypeScriptビルド"
+
+[tasks.start]
+run = "pnpm start"
+description = "ビルド済みアプリ起動"
+
+[tasks.lint]
+run = "pnpm lint"
+description = "oxlintでリント"
+
+[tasks.fmt]
+run = "pnpm fmt"
+description = "oxfmtでフォーマット"
+
+[tasks.typecheck]
+run = "pnpm typecheck"
+description = "型チェック"
+
+[tasks.test]
+run = "pnpm test"
+description = "vitestでテスト実行"
+
+[tasks.setup]
+run = "pnpm install && cp -n .env.local.example .env.local"
+description = "初期セットアップ"
