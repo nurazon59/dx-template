@@ -14,12 +14,13 @@
   },
   "dependencies": {
     "@slack/bolt": "^4.3.0",
+    "hono": "^4.7.7",
     "slack-block-builder": "^2.8.0"
   },
   "devDependencies": {
     "@hono/node-server": "^1.14.1",
+    "@slack-bot/server": "workspace:*",
     "@types/node": "^22.15.3",
-    "hono": "^4.7.7",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^4.1.4"

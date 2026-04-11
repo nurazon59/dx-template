@@ -1,11 +1,10 @@
 import { Hono } from "hono";
+import type { Env } from "../lib/context.js";
+import { usersRoute } from "./users.js";
 
-const app = new Hono()
+const app = new Hono<Env>()
   .get("/health", (c) => c.json({ status: "ok" }))
-  .get("/users", async (c) => {
-    // TODO: db連携
-    return c.json({ users: [] });
-  });
+  .route("/users", usersRoute);
 
 export type AppRoutes = typeof app;
 
