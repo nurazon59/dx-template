@@ -30,3 +30,23 @@ tasks:
     desc: vitest ウォッチモード
     cmds:
       - pnpm test:watch
+
+  migrate:generate:
+    desc: マイグレーションSQL生成
+    cmds:
+      - pnpm exec drizzle-kit generate
+
+  migrate:up:
+    desc: マイグレーション実行
+    cmds:
+      - pnpm exec drizzle-kit migrate
+
+  migrate:push:
+    desc: スキーマ直接反映（開発用）
+    cmds:
+      - pnpm exec drizzle-kit push
+
+  migrate:studio:
+    desc: Drizzle Studio 起動
+    cmds:
+      - pnpm exec drizzle-kit studio

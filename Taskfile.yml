@@ -1,5 +1,8 @@
 version: "3"
 
+dotenv:
+  - .env.local
+
 includes:
   bot:
     taskfile: packages/slack-bot/Taskfile.yml
@@ -67,6 +70,26 @@ tasks:
     cmds:
       - pnpm install
       - cp -n .env.local.example .env.local
+
+  migrate:generate:
+    desc: マイグレーションSQL生成
+    cmds:
+      - task: server:migrate:generate
+
+  migrate:up:
+    desc: マイグレーション実行
+    cmds:
+      - task: server:migrate:up
+
+  migrate:push:
+    desc: スキーマ直接反映（開発用）
+    cmds:
+      - task: server:migrate:push
+
+  migrate:studio:
+    desc: Drizzle Studio 起動
+    cmds:
+      - task: server:migrate:studio
 
   docker:build:
     desc: Docker イメージビルド
