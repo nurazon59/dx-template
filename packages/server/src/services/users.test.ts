@@ -43,7 +43,7 @@ describe("createUser", () => {
       updatedAt: new Date(),
     };
     mockFindBySlackUserId.mockResolvedValue(undefined);
-    mockInsert.mockResolvedValue(newUser as never);
+    mockInsert.mockResolvedValue(newUser);
 
     const result = await createUser(db, {
       slackUserId: "U1",
