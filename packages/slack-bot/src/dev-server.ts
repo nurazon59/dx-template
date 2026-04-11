@@ -1,5 +1,4 @@
-import { Hono } from "hono";
-import { serve } from "@hono/node-server";
+import { createServer } from "node:http";
 import { ping } from "./listeners/commands/ping.js";
 import { appMention } from "./listeners/events/app-mention.js";
 import { buttonClick } from "./listeners/actions/button-click.js";
@@ -23,7 +22,6 @@ function createHarness() {
   return { captured, ack, respond, say };
 }
 
-// リスナー名 → 関数のマッピング
 const commands: Record<string, (args: any) => Promise<void>> = {
   ping,
 };
@@ -36,53 +34,67 @@ const actions: Record<string, (args: any) => Promise<void>> = {
   "button-click": buttonClick,
 };
 
-const app = new Hono();
+function parseBody(req: import("node:http").IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", (chunk: Buffer) => {
+      data += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch {
+        resolve({});
+      }
+    });
+  });
+}
 
-app.post("/commands/:name", async (c) => {
-  const name = c.req.param("name");
-  const handler = commands[name];
-  if (!handler) {
-    return c.json({ error: `unknown command: ${name}` }, 404);
+function json(res: import("node:http").ServerResponse, status: number, body: unknown) {
+  res.writeHead(status, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(body));
+}
+
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url ?? "/", `http://localhost`);
+  const [, category, name] = url.pathname.split("/");
+
+  if (req.method !== "POST" || !category || !name) {
+    json(res, 404, { error: "not found" });
+    return;
   }
 
-  const body = await c.req.json().catch(() => ({}));
-  const { captured, ack, respond } = createHarness();
+  const registry: Record<string, Record<string, (args: any) => Promise<void>>> = {
+    commands,
+    events,
+    actions,
+  };
 
-  await handler({ ack, respond, command: { text: "", ...body } });
-  return c.json({ ack: captured.ack, responses: captured.responses });
-});
-
-app.post("/events/:name", async (c) => {
-  const name = c.req.param("name");
-  const handler = events[name];
+  const handlers = registry[category];
+  const handler = handlers?.[name];
   if (!handler) {
-    return c.json({ error: `unknown event: ${name}` }, 404);
+    json(res, 404, { error: `unknown ${category}: ${name}` });
+    return;
   }
 
-  const body = await c.req.json().catch(() => ({ user: "U_LOCAL" }));
-  const { captured, say } = createHarness();
+  const body = await parseBody(req);
+  const { captured, ack, respond, say } = createHarness();
 
-  await handler({ event: { user: "U_LOCAL", ...body }, say });
-  return c.json({ responses: captured.responses });
-});
-
-app.post("/actions/:name", async (c) => {
-  const name = c.req.param("name");
-  const handler = actions[name];
-  if (!handler) {
-    return c.json({ error: `unknown action: ${name}` }, 404);
+  if (category === "commands") {
+    await handler({ ack, respond, command: { text: "", ...body } });
+    json(res, 200, { ack: captured.ack, responses: captured.responses });
+  } else if (category === "events") {
+    await handler({ event: { user: "U_LOCAL", ...body }, say });
+    json(res, 200, { responses: captured.responses });
+  } else {
+    await handler({ ack, respond, body: { ...body } });
+    json(res, 200, { ack: captured.ack, responses: captured.responses });
   }
-
-  const body = await c.req.json().catch(() => ({}));
-  const { captured, ack, respond } = createHarness();
-
-  await handler({ ack, respond, body: { ...body } });
-  return c.json({ ack: captured.ack, responses: captured.responses });
 });
 
 const PORT = 4000;
 
-serve({ fetch: app.fetch, port: PORT }, () => {
+server.listen(PORT, () => {
   console.log(`Dev harness running on http://localhost:${PORT}`);
   console.log("Endpoints:");
   console.log(`  POST /commands/:name   (${Object.keys(commands).join(", ")})`);
