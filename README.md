@@ -64,11 +64,11 @@ infra/
 
 ## 組み込みリスナー
 
-| 種別 | トリガー | 動作 |
-|------|----------|------|
-| Command | `/ping` | Pong! を返す |
-| Event | `app_mention` | メンションしたユーザーに挨拶を返す |
-| Action | `button_click` | クリック確認メッセージを返す |
+| 種別    | トリガー       | 動作                               |
+| ------- | -------------- | ---------------------------------- |
+| Command | `/ping`        | Pong! を返す                       |
+| Event   | `app_mention`  | メンションしたユーザーに挨拶を返す |
+| Action  | `button_click` | クリック確認メッセージを返す       |
 
 ## ローカル開発ハーネス
 
@@ -159,7 +159,7 @@ terraform -chdir=infra/terraform init -migrate-state
 
 ## Claude Code Skills
 
-| スキル | 説明 | 使い方 |
-|--------|------|--------|
-| `add-listener` | リスナーをスキャフォールド | `/add-listener command daily-report` |
-| `add-block-message` | Block Kit メッセージ生成 | `/add-block-message 承認フォーム` |
+| スキル              | 説明                       | 使い方                               |
+| ------------------- | -------------------------- | ------------------------------------ |
+| `add-listener`      | リスナーをスキャフォールド | `/add-listener command daily-report` |
+| `add-block-message` | Block Kit メッセージ生成   | `/add-block-message 承認フォーム`    |

@@ -18,8 +18,8 @@
     "slack-block-builder": "^2.8.0"
   },
   "devDependencies": {
-    "@hono/node-server": "^1.14.1",
     "@dx-template/server": "workspace:*",
+    "@hono/node-server": "^1.14.1",
     "@types/node": "^22.15.3",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",

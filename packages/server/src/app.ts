@@ -4,9 +4,7 @@ import { AppError } from "./lib/errors.js";
 import { dbMiddleware } from "./middleware/db.js";
 import { routes } from "./routes/index.js";
 
-const app = new Hono<Env>()
-  .use(dbMiddleware)
-  .route("/api", routes);
+const app = new Hono<Env>().use(dbMiddleware).route("/api", routes);
 
 app.onError((err, c) => {
   if (err instanceof AppError) {

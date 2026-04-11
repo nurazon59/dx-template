@@ -10,11 +10,7 @@ vi.mock("../services/users.js", () => ({
 
 import { app } from "../app.js";
 import { AppError } from "../lib/errors.js";
-import {
-  createUser,
-  findBySlackUserId,
-  listUsers,
-} from "../services/users.js";
+import { createUser, findBySlackUserId, listUsers } from "../services/users.js";
 
 const mockListUsers = vi.mocked(listUsers);
 const mockCreateUser = vi.mocked(createUser);
@@ -68,9 +64,7 @@ describe("POST /api/users", () => {
   });
 
   it("重複時に 409 を返す", async () => {
-    mockCreateUser.mockRejectedValue(
-      new AppError("USER_ALREADY_EXISTS", "既に登録済み", 409),
-    );
+    mockCreateUser.mockRejectedValue(new AppError("USER_ALREADY_EXISTS", "既に登録済み", 409));
 
     const res = await app.request("/api/users", {
       method: "POST",
@@ -96,9 +90,7 @@ describe("GET /api/users/:slackUserId", () => {
   });
 
   it("見つからない場合は 404 を返す", async () => {
-    mockFindBySlackUserId.mockRejectedValue(
-      new AppError("USER_NOT_FOUND", "見つかりません", 404),
-    );
+    mockFindBySlackUserId.mockRejectedValue(new AppError("USER_NOT_FOUND", "見つかりません", 404));
 
     const res = await app.request("/api/users/UNKNOWN");
 
