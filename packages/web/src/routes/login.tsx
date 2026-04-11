@@ -1,7 +1,17 @@
 import { Box, Button, Container, Field, Heading, Input, Stack, Text } from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod/v4";
 import { authClient } from "../lib/auth";
+
+const loginSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(1, "パスワードを入力してください"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -9,24 +19,26 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setServerError("");
 
     const { error: signInError } = await authClient.signIn.email({
-      email,
-      password,
+      email: data.email,
+      password: data.password,
     });
 
-    setLoading(false);
     if (signInError) {
-      setError(signInError.message ?? "ログインに失敗しました");
+      setServerError(signInError.message ?? "ログインに失敗しました");
     } else {
       await router.navigate({ to: "/" });
     }
@@ -39,35 +51,27 @@ function LoginPage() {
           ログイン
         </Heading>
 
-        <Box as="form" onSubmit={handleSubmit}>
+        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
           <Stack gap={4}>
-            <Field.Root>
+            <Field.Root invalid={!!errors.email}>
               <Field.Label>メールアドレス</Field.Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input type="email" {...register("email")} />
+              <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Field.Root>
+            <Field.Root invalid={!!errors.password}>
               <Field.Label>パスワード</Field.Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Input type="password" {...register("password")} />
+              <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
 
-            {error && (
+            {serverError && (
               <Text color="red.500" fontSize="sm">
-                {error}
+                {serverError}
               </Text>
             )}
 
-            <Button type="submit" colorPalette="blue" loading={loading} width="full">
+            <Button type="submit" colorPalette="blue" loading={isSubmitting} width="full">
               ログイン
             </Button>
           </Stack>

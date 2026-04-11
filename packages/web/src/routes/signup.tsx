@@ -1,7 +1,18 @@
 import { Box, Button, Container, Field, Heading, Input, Stack, Text } from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod/v4";
 import { authClient } from "../lib/auth";
+
+const signupSchema = z.object({
+  name: z.string().min(1, "名前を入力してください"),
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
+});
+
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export const Route = createFileRoute("/signup")({
   component: SignUpPage,
@@ -9,26 +20,27 @@ export const Route = createFileRoute("/signup")({
 
 function SignUpPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+  });
+
+  const onSubmit = async (data: SignupFormValues) => {
+    setServerError("");
 
     const { error: signUpError } = await authClient.signUp.email({
-      name,
-      email,
-      password,
+      name: data.name,
+      email: data.email,
+      password: data.password,
     });
 
-    setLoading(false);
     if (signUpError) {
-      setError(signUpError.message ?? "サインアップに失敗しました");
+      setServerError(signUpError.message ?? "サインアップに失敗しました");
     } else {
       await router.navigate({ to: "/" });
     }
@@ -41,41 +53,33 @@ function SignUpPage() {
           サインアップ
         </Heading>
 
-        <Box as="form" onSubmit={handleSubmit}>
+        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
           <Stack gap={4}>
-            <Field.Root>
+            <Field.Root invalid={!!errors.name}>
               <Field.Label>名前</Field.Label>
-              <Input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input type="text" {...register("name")} />
+              <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Field.Root>
+            <Field.Root invalid={!!errors.email}>
               <Field.Label>メールアドレス</Field.Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input type="email" {...register("email")} />
+              <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Field.Root>
+            <Field.Root invalid={!!errors.password}>
               <Field.Label>パスワード</Field.Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
+              <Input type="password" {...register("password")} />
+              <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
 
-            {error && (
+            {serverError && (
               <Text color="red.500" fontSize="sm">
-                {error}
+                {serverError}
               </Text>
             )}
 
-            <Button type="submit" colorPalette="blue" loading={loading} width="full">
+            <Button type="submit" colorPalette="blue" loading={isSubmitting} width="full">
               サインアップ
             </Button>
           </Stack>
