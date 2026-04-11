@@ -5,7 +5,7 @@ import { authClient } from "../lib/auth";
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
     const { data } = await authClient.getSession();
-    if (!data) {
+    if (!data?.user) {
       throw redirect({ to: "/login" });
     }
     return { session: data };
@@ -18,13 +18,18 @@ function HomePage() {
   const { data, isPending } = authClient.useSession();
 
   const currentSession = data ?? session;
+  const currentUser = currentSession?.user;
 
-  if (isPending && !currentSession) {
+  if (isPending && !currentUser) {
     return (
       <Container maxW="4xl" py={20} textAlign="center">
         <Spinner size="xl" />
       </Container>
     );
+  }
+
+  if (!currentUser) {
+    return null;
   }
 
   return (
@@ -35,7 +40,7 @@ function HomePage() {
           ログアウト
         </Button>
       </HStack>
-      <Text color="fg.muted">ようこそ、{currentSession?.user.name}さん</Text>
+      <Text color="fg.muted">ようこそ、{currentUser.name}さん</Text>
     </Container>
   );
 }
