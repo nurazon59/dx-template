@@ -123,6 +123,11 @@ tasks:
     cmds:
       - terraform -chdir=infra/terraform init
 
+  infra:migrate-state:
+    desc: Terraform state を S3 backend へ移行
+    cmds:
+      - terraform -chdir=infra/terraform init -migrate-state
+
   infra:plan:
     desc: Terraform 実行計画
     cmds:

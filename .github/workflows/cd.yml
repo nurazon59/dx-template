@@ -3,6 +3,7 @@ name: CD
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -25,6 +26,9 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
         id: ecr
 
+      - name: Export AWS account ID
+        run: echo "AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
+
       - name: Build and push image
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
@@ -39,7 +43,6 @@ jobs:
       - name: Deploy with ecspresso
         working-directory: infra/ecspresso
         env:
-          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           IMAGE_TAG: ${{ github.sha }}
         run: ecspresso deploy
 
@@ -56,6 +59,9 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
         id: ecr
 
+      - name: Export AWS account ID
+        run: echo "AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
+
       - name: Build and push image
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
@@ -70,7 +76,6 @@ jobs:
       - name: Deploy with ecspresso
         working-directory: infra/ecspresso/server
         env:
-          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           IMAGE_TAG: ${{ github.sha }}
         run: ecspresso deploy
 
@@ -91,7 +96,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy to S3
-        run: aws s3 sync packages/web/dist/ s3://${{ vars.WEB_BUCKET_NAME }}/ --delete
+        run: aws s3 sync packages/web/dist/ s3://slack-bot-template-web/ --delete
 
       - name: Invalidate CloudFront cache
-        run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        run: aws cloudfront create-invalidation --distribution-id E2H122G6V362B7 --paths "/*"

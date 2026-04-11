@@ -102,12 +102,16 @@ data "aws_iam_policy_document" "github_actions" {
   statement {
     sid = "ECS"
     actions = [
+      "ecs:CreateService",
+      "ecs:DescribeClusters",
       "ecs:DescribeServices",
       "ecs:UpdateService",
       "ecs:RegisterTaskDefinition",
       "ecs:DescribeTaskDefinition",
+      "ecs:ListServices",
       "ecs:ListTasks",
       "ecs:DescribeTasks",
+      "ecs:TagResource",
     ]
     resources = ["*"]
   }
@@ -132,6 +136,19 @@ data "aws_iam_policy_document" "github_actions" {
     resources = [
       "arn:aws:s3:::${local.name_prefix}-web",
       "arn:aws:s3:::${local.name_prefix}-web/*",
+    ]
+  }
+
+  statement {
+    sid = "S3Tfstate"
+    actions = [
+      "s3:GetObject",
+      "s3:GetBucketLocation",
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${local.name_prefix}-tfstate",
+      "arn:aws:s3:::${local.name_prefix}-tfstate/terraform.tfstate",
     ]
   }
 

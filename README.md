@@ -129,9 +129,12 @@ Terraform:
 
 ```sh
 task infra:init
+task infra:migrate-state
 task infra:plan
 task infra:apply
 ```
+
+初回に local state で apply して `slack-bot-template-tfstate` bucket を作成した後、`task infra:migrate-state` で S3 backend へ移行する。
 
 ecspresso:
 
@@ -140,8 +143,8 @@ task deploy:bot
 task deploy:server
 ```
 
-S3 backend へ移行する場合は、初回の Terraform apply で S3 bucket を作成してから backend 設定を有効にし、次を実行する。
+GitHub Actions の ECS deploy は S3 backend の tfstate を ecspresso から参照する。GitHub repository variables には次を設定する。
 
 ```sh
-terraform -chdir=infra/terraform init -migrate-state
+AWS_ROLE_ARN=arn:aws:iam::<account-id>:role/slack-bot-template-github-actions
 ```
