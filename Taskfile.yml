@@ -70,6 +70,7 @@ tasks:
     cmds:
       - pnpm install
       - cp -n .env.local.example .env.local
+      - lefthook install
 
   migrate:generate:
     desc: マイグレーションSQL生成
