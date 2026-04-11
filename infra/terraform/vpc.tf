@@ -38,22 +38,3 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
-
-resource "aws_security_group" "ecs" {
-  name_prefix = "${local.name_prefix}-ecs-"
-  description = "ECS tasks - egress only (Socket Mode)"
-  vpc_id      = aws_vpc.main.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "${local.name_prefix}-ecs-sg" }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}

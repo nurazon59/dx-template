@@ -1,0 +1,97 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-1
+
+jobs:
+  slack-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Build and push image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: slack-bot-template
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - uses: jdx/mise-action@v2
+
+      - name: Deploy with ecspresso
+        working-directory: infra/ecspresso
+        env:
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: ecspresso deploy
+
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Build and push image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: dx-template-server
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f packages/server/Dockerfile .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - uses: jdx/mise-action@v2
+
+      - name: Deploy with ecspresso
+        working-directory: infra/ecspresso/server
+        env:
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: ecspresso deploy
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @dx-template/web build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 sync packages/web/dist/ s3://${{ vars.WEB_BUCKET_NAME }}/ --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

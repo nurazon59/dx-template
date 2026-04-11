@@ -92,14 +92,24 @@ tasks:
       - task: server:migrate:studio
 
   docker:build:
-    desc: Docker イメージビルド
+    desc: slack-bot Docker イメージビルド
     cmds:
       - docker build -t slack-bot-template .
 
+  docker:build:server:
+    desc: server Docker イメージビルド
+    cmds:
+      - docker build -t dx-template-server -f packages/server/Dockerfile .
+
   docker:run:
-    desc: Docker コンテナ実行
+    desc: slack-bot Docker コンテナ実行
     cmds:
       - docker run --rm --env-file .env.local slack-bot-template
+
+  docker:run:server:
+    desc: server Docker コンテナ実行
+    cmds:
+      - docker run --rm --env-file .env.local -p 3000:3000 dx-template-server
 
   infra:init:
     desc: Terraform 初期化
@@ -116,8 +126,14 @@ tasks:
     cmds:
       - terraform -chdir=infra/terraform apply
 
-  deploy:
-    desc: ecspresso でデプロイ
+  deploy:bot:
+    desc: ecspresso で slack-bot デプロイ
     dir: infra/ecspresso
+    cmds:
+      - ecspresso deploy
+
+  deploy:server:
+    desc: ecspresso で server デプロイ
+    dir: infra/ecspresso/server
     cmds:
       - ecspresso deploy

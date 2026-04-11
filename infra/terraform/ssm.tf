@@ -21,3 +21,15 @@ resource "aws_ssm_parameter" "slack_app_token" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "database_url" {
+  name  = "/${local.name_prefix}/DATABASE_URL"
+  type  = "SecureString"
+  value = "placeholder"
+
+  tags = { Name = "${local.name_prefix}-database-url" }
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}

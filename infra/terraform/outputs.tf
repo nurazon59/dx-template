@@ -42,3 +42,48 @@ output "tfstate_bucket" {
   description = "tfstate S3 バケット名"
   value       = aws_s3_bucket.tfstate.id
 }
+
+output "server_ecr_repository_url" {
+  description = "server ECR リポジトリ URL"
+  value       = aws_ecr_repository.server.repository_url
+}
+
+output "server_log_group_name" {
+  description = "server CloudWatch Logs グループ名"
+  value       = aws_cloudwatch_log_group.server.name
+}
+
+output "private_subnet_ids" {
+  description = "プライベートサブネット ID"
+  value       = aws_subnet.private[*].id
+}
+
+output "alb_dns_name" {
+  description = "ALB DNS 名"
+  value       = aws_lb.server.dns_name
+}
+
+output "rds_endpoint" {
+  description = "RDS エンドポイント"
+  value       = aws_db_instance.main.endpoint
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront ディストリビューション ID"
+  value       = aws_cloudfront_distribution.web.id
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront ドメイン名"
+  value       = aws_cloudfront_distribution.web.domain_name
+}
+
+output "web_bucket_name" {
+  description = "Web S3 バケット名"
+  value       = aws_s3_bucket.web.id
+}
+
+output "github_actions_role_arn" {
+  description = "GitHub Actions IAM ロール ARN"
+  value       = aws_iam_role.github_actions.arn
+}

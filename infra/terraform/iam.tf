@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "ecs_assume" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -27,8 +29,7 @@ data "aws_iam_policy_document" "task_execution_ssm" {
       "ssm:GetParameter",
     ]
     resources = [
-      aws_ssm_parameter.slack_bot_token.arn,
-      aws_ssm_parameter.slack_app_token.arn,
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.name_prefix}/*",
     ]
   }
 }
@@ -44,4 +45,107 @@ resource "aws_iam_role" "task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
 
   tags = { Name = "${local.name_prefix}-task" }
+}
+
+# GitHub Actions OIDC
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+
+  tags = { Name = "${local.name_prefix}-github-actions-oidc" }
+}
+
+data "aws_iam_policy_document" "github_actions_assume" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:${var.github_repository}:*"]
+    }
+  }
+}
+
+resource "aws_iam_role" "github_actions" {
+  name               = "${local.name_prefix}-github-actions"
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume.json
+
+  tags = { Name = "${local.name_prefix}-github-actions" }
+}
+
+data "aws_iam_policy_document" "github_actions" {
+  statement {
+    sid = "ECR"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ECS"
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:UpdateService",
+      "ecs:RegisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
+      "ecs:ListTasks",
+      "ecs:DescribeTasks",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid     = "PassRole"
+    actions = ["iam:PassRole"]
+    resources = [
+      aws_iam_role.task_execution.arn,
+      aws_iam_role.task.arn,
+    ]
+  }
+
+  statement {
+    sid = "S3Web"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${local.name_prefix}-web",
+      "arn:aws:s3:::${local.name_prefix}-web/*",
+    ]
+  }
+
+  statement {
+    sid = "CloudFront"
+    actions = [
+      "cloudfront:CreateInvalidation",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "github_actions" {
+  name   = "${local.name_prefix}-github-actions"
+  role   = aws_iam_role.github_actions.id
+  policy = data.aws_iam_policy_document.github_actions.json
 }
