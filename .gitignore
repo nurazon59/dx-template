@@ -9,3 +9,4 @@ infra/terraform/.terraform/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+packages/server/openapi.json
