@@ -25,27 +25,41 @@ SLACK_APP_TOKEN=xapp-your-app-token
 ## 開発
 
 ```sh
-mise run dev          # tsx watch で起動
-mise run lint         # oxlint
-mise run fmt          # oxfmt
-mise run typecheck    # tsc --noEmit
-mise run test         # vitest run
+mise run dev              # 全パッケージ並列起動
+mise run dev:bot          # bot のみ起動
+mise run dev:server       # server のみ起動
+mise run dev:local        # ローカル開発ハーネス（Slack 不要）
+mise run lint             # oxlint
+mise run fmt              # oxfmt
+mise run typecheck        # tsc --noEmit (全パッケージ)
+mise run test             # vitest run (全パッケージ)
 ```
 
 ## プロジェクト構成
 
 ```
-src/
-  app.ts                          # Bolt App インスタンス
-  index.ts                        # エントリーポイント
-  listeners/
-    index.ts                      # 全リスナー登録
-    commands/
-      ping.ts                     # /ping コマンド
-    events/
-      app-mention.ts              # app_mention イベント
-    actions/
-      button-click.ts             # button_click アクション
+packages/
+  bot/                            # Slack Bot (Socket Mode)
+    src/
+      app.ts                      # Bolt App インスタンス
+      index.ts                    # エントリーポイント
+      listeners/
+        index.ts                  # 全リスナー登録
+        commands/
+          ping.ts                 # /ping コマンド
+        events/
+          app-mention.ts          # app_mention イベント
+        actions/
+          button-click.ts         # button_click アクション
+  server/                         # API サーバー (Hono)
+    src/
+      app.ts                      # Hono App
+      index.ts                    # エントリーポイント
+      db/                         # Drizzle ORM
+      routes/                     # ルーティング
+infra/
+  terraform/                      # AWS インフラ定義
+  ecspresso/                      # ECS デプロイ設定
 ```
 
 ## 組み込みリスナー
@@ -55,6 +69,25 @@ src/
 | Command | `/ping` | Pong! を返す |
 | Event | `app_mention` | メンションしたユーザーに挨拶を返す |
 | Action | `button_click` | クリック確認メッセージを返す |
+
+## ローカル開発ハーネス
+
+Slack App のトークンなしでリスナーの動作確認ができるローカルサーバー。リスナー関数をモック引数で呼び出し、Block Kit JSON レスポンスを返す。
+
+```sh
+mise run dev:local    # http://localhost:4000 で起動
+
+# コマンドテスト
+curl -s -X POST http://localhost:4000/commands/ping | jq
+
+# イベントテスト（ペイロード付き）
+curl -s -X POST http://localhost:4000/events/app-mention \
+  -H 'Content-Type: application/json' \
+  -d '{"user": "U12345"}' | jq
+
+# アクションテスト
+curl -s -X POST http://localhost:4000/actions/button-click | jq
+```
 
 ## テスト
 
@@ -71,3 +104,63 @@ pnpm test:watch     # ウォッチモード
 mise run build    # tsc → dist/
 mise run start    # node dist/index.js
 ```
+
+## Docker
+
+```sh
+mise run docker:build    # イメージビルド
+mise run docker:run      # コンテナ実行（.env.local を使用）
+```
+
+## インフラ (AWS)
+
+Terraform + ecspresso で AWS にデプロイする。Socket Mode のため NAT Gateway 不要（パブリックサブネット + アウトバウンドのみ）。
+
+### リソース構成
+
+- **VPC**: パブリックサブネット x2 AZ
+- **ECS Cluster**: Fargate, Container Insights 有効
+- **ECR**: コンテナレジストリ（最新10件保持）
+- **SSM Parameter Store**: `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN` (SecureString)
+- **CloudWatch Logs**: 保持30日
+- **S3**: tfstate バケット
+
+### デプロイ手順
+
+```sh
+# 1. Terraform 初期化・適用
+mise run infra:init
+mise run infra:plan
+mise run infra:apply
+
+# 2. SSM にトークン設定（初回のみ）
+aws ssm put-parameter \
+  --name /slack-bot-template/SLACK_BOT_TOKEN \
+  --value "xoxb-..." --type SecureString --overwrite
+aws ssm put-parameter \
+  --name /slack-bot-template/SLACK_APP_TOKEN \
+  --value "xapp-..." --type SecureString --overwrite
+
+# 3. Docker イメージ push
+aws ecr get-login-password | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
+docker tag slack-bot-template:latest <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/slack-bot-template:latest
+docker push <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/slack-bot-template:latest
+
+# 4. ecspresso デプロイ
+mise run deploy
+```
+
+### S3 backend への移行
+
+初回は local backend で `terraform apply` → S3 バケット作成後、`versions.tf` の backend ブロックをアンコメントして:
+
+```sh
+terraform -chdir=infra/terraform init -migrate-state
+```
+
+## Claude Code Skills
+
+| スキル | 説明 | 使い方 |
+|--------|------|--------|
+| `add-listener` | リスナーをスキャフォールド | `/add-listener command daily-report` |
+| `add-block-message` | Block Kit メッセージ生成 | `/add-block-message 承認フォーム` |
