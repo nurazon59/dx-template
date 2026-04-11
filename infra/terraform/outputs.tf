@@ -87,3 +87,13 @@ output "github_actions_role_arn" {
   description = "GitHub Actions IAM ロール ARN"
   value       = aws_iam_role.github_actions.arn
 }
+
+output "dynamodb_table_name" {
+  description = "DynamoDB テーブル名"
+  value       = aws_dynamodb_table.main.name
+}
+
+output "dynamodb_table_arn" {
+  description = "DynamoDB テーブル ARN"
+  value       = aws_dynamodb_table.main.arn
+}

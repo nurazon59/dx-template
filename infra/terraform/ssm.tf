@@ -33,3 +33,11 @@ resource "aws_ssm_parameter" "database_url" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "dynamodb_table_name" {
+  name  = "/${local.name_prefix}/DYNAMODB_TABLE_NAME"
+  type  = "String"
+  value = aws_dynamodb_table.main.name
+
+  tags = { Name = "${local.name_prefix}-dynamodb-table-name" }
+}
