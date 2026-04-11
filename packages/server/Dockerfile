@@ -17,7 +17,10 @@ FROM base AS production
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server/package.json packages/server/
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
+COPY packages/server/drizzle.config.ts packages/server/
+COPY packages/server/drizzle/ packages/server/drizzle/
+COPY packages/server/src/ packages/server/src/
 COPY --from=build /app/packages/server/dist/ packages/server/dist/
 USER node
 EXPOSE 3000

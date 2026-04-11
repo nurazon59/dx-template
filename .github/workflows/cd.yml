@@ -73,6 +73,16 @@ jobs:
 
       - uses: jdx/mise-action@v2
 
+      - name: Run database migrations
+        working-directory: infra/ecspresso/server
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ecspresso run \
+            --overrides '{"containerOverrides":[{"name":"app","command":["pnpm","--dir","packages/server","exec","drizzle-kit","migrate"]}]}' \
+            --wait \
+            --watch-container app
+
       - name: Deploy with ecspresso
         working-directory: infra/ecspresso/server
         env:
