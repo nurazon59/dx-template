@@ -138,8 +138,8 @@ importers:
         specifier: ^7.72.1
         version: 7.72.1(react@19.2.5)
       zod:
-        specifier: ^3.25.76
-        version: 3.25.76
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@tanstack/router-vite-plugin':
         specifier: ^1.166.29
