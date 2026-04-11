@@ -1,5 +1,5 @@
 {
-  "name": "slack-bot-template",
+  "name": "dx-template",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "fmt": "oxfmt --write packages/",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "dev:bot": "pnpm --filter @slack-bot/bot dev",
-    "dev:server": "pnpm --filter @slack-bot/server dev",
-    "dev:local": "pnpm --filter @slack-bot/bot dev:local"
+    "dev:bot": "pnpm --filter @dx-template/slack-bot dev",
+    "dev:server": "pnpm --filter @dx-template/server dev",
+    "dev:local": "pnpm --filter @dx-template/slack-bot dev:local"
   },
   "devDependencies": {
     "oxlint": "^1.1.0"

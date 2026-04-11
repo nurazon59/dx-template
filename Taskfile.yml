@@ -2,8 +2,8 @@ version: "3"
 
 includes:
   bot:
-    taskfile: packages/bot/Taskfile.yml
-    dir: packages/bot
+    taskfile: packages/slack-bot/Taskfile.yml
+    dir: packages/slack-bot
   server:
     taskfile: packages/server/Taskfile.yml
     dir: packages/server

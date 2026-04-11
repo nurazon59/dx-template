@@ -7,17 +7,17 @@ FROM base AS build
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.base.json ./
-COPY packages/bot/package.json packages/bot/
+COPY packages/slack-bot/package.json packages/slack-bot/
 RUN pnpm install --frozen-lockfile
-COPY packages/bot/tsconfig.json packages/bot/
-COPY packages/bot/src/ packages/bot/src/
-RUN pnpm --filter @slack-bot/bot build
+COPY packages/slack-bot/tsconfig.json packages/slack-bot/
+COPY packages/slack-bot/src/ packages/slack-bot/src/
+RUN pnpm --filter @dx-template/slack-bot build
 
 FROM base AS production
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/bot/package.json packages/bot/
+COPY packages/slack-bot/package.json packages/slack-bot/
 RUN pnpm install --frozen-lockfile --prod
-COPY --from=build /app/packages/bot/dist/ packages/bot/dist/
+COPY --from=build /app/packages/slack-bot/dist/ packages/slack-bot/dist/
 USER node
-CMD ["node", "packages/bot/dist/index.js"]
+CMD ["node", "packages/slack-bot/dist/index.js"]

@@ -1,5 +1,5 @@
 {
-  "name": "@slack-bot/bot",
+  "name": "@dx-template/slack-bot",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@hono/node-server": "^1.14.1",
-    "@slack-bot/server": "workspace:*",
+    "@dx-template/server": "workspace:*",
     "@types/node": "^22.15.3",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
