@@ -110,10 +110,20 @@ data "aws_iam_policy_document" "github_actions" {
       "ecs:DescribeTaskDefinition",
       "ecs:ListServices",
       "ecs:ListTasks",
+      "ecs:ListServiceDeployments",
       "ecs:RunTask",
       "ecs:DescribeTasks",
       "ecs:StopTask",
       "ecs:TagResource",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ApplicationAutoScalingRead"
+    actions = [
+      "application-autoscaling:DescribeScalableTargets",
+      "application-autoscaling:DescribeScalingPolicies",
     ]
     resources = ["*"]
   }
