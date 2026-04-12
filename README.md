@@ -7,7 +7,7 @@ Web、API server、Slack bot、AWS infra をまとめた TypeScript モノレポ
 - [mise](https://mise.jdx.dev/) (Node.js 22、pnpm、go-task、mprocs、lefthook を管理)
 - Docker / Docker Compose (PostgreSQL やコンテナ実行で使用)
 - Slack App (Slack bot を動かす場合)
-- AWS CLI / Terraform / ecspresso (infra/deploy を行う場合)
+- AWS CLI / Terraform (infra を行う場合)
 
 ## セットアップ
 
@@ -152,14 +152,7 @@ task infra:apply
 
 初回に local state で apply して `slack-bot-template-tfstate` bucket を作成した後、`task infra:migrate-state` で S3 backend へ移行する。
 
-ecspresso:
-
-```sh
-task deploy:bot
-task deploy:server
-```
-
-GitHub Actions の ECS deploy は S3 backend の tfstate を ecspresso から参照する。GitHub repository variables には次を設定する。
+ECS deploy はローカルから実行せず、GitHub Actions 経由で行う。GitHub Actions の ECS deploy は S3 backend の tfstate を ecspresso から参照する。GitHub repository variables には次を設定する。
 
 ```sh
 AWS_ROLE_ARN=arn:aws:iam::<account-id>:role/slack-bot-template-github-actions

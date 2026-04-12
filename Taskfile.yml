@@ -142,15 +142,3 @@ tasks:
     desc: Terraform リソース削除
     cmds:
       - terraform -chdir=infra/terraform destroy -var-file=envs/staging.tfvars
-
-  deploy:bot:
-    desc: ecspresso で slack-bot デプロイ
-    dir: infra/ecspresso
-    cmds:
-      - ecspresso deploy
-
-  deploy:server:
-    desc: ecspresso で server デプロイ
-    dir: infra/ecspresso/server
-    cmds:
-      - ecspresso deploy
