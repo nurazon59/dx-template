@@ -57,3 +57,8 @@ export const AgentRunResultSchema = z.object({
   }),
 });
 export type AgentRunResult = z.infer<typeof AgentRunResultSchema>;
+
+export interface StreamAgentChatInput extends AgentChatInput {
+  actor?: AgentRunInput["actor"];
+  source: AgentRunInput["source"];
+}

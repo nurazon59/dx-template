@@ -35,7 +35,7 @@ vi.mock("@ai-sdk/google", () => ({
   google: vi.fn((model: string) => ({ model })),
 }));
 
-import { runAgent, streamAgentChat } from "./run-agent.js";
+import { runAgent, runMockAgent, streamAgentChat } from "./index.js";
 
 beforeEach(() => {
   delete process.env["AI_AGENT_MODE"];
@@ -131,18 +131,17 @@ describe("runAgent", () => {
     });
   });
 
-  it("AI_AGENT_MODE=mock なら API key なしで workflow を dispatch する", async () => {
-    process.env["AI_AGENT_MODE"] = "mock";
+  it("runMockAgent は API key なしで workflow を dispatch する", async () => {
     delete process.env["OPENAI_API_KEY"];
     delete process.env["OPENAI_MODEL"];
 
-    const result = await runAgent(
+    const result = await runMockAgent(
       {
         message: "週次レポートを作って",
         source: "web",
       },
       { queries: {} },
-      { runId: "run-mock" },
+      "run-mock",
     );
 
     expect(result).toMatchObject({
