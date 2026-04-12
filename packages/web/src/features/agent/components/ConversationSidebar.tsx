@@ -1,5 +1,5 @@
 import { Button, Stack, Text } from "@chakra-ui/react";
-import type { AgentConversationSummary } from "../../lib/agent-conversations";
+import type { AgentConversationSummary } from "../../../lib/agent-conversations";
 
 interface ConversationSidebarProps {
   activeConversationId: string;

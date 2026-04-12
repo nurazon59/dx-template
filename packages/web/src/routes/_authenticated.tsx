@@ -1,5 +1,5 @@
-import { Box, HStack, Heading, Link } from "@chakra-ui/react";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Box, HStack, Heading } from "@chakra-ui/react";
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -25,10 +25,10 @@ function AuthenticatedLayout() {
             <Heading size="md">DX Template</Heading>
           </Link>
           <HStack gap={4}>
-            <Link to="/agents" fontSize="sm">
+            <Link to="/agents" style={{ fontSize: "0.875rem" }}>
               Agents
             </Link>
-            <Link to="/users" fontSize="sm">
+            <Link to="/users" style={{ fontSize: "0.875rem" }}>
               ユーザー
             </Link>
           </HStack>
