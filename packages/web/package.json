@@ -13,12 +13,14 @@
     "generate:api": "orval"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.160",
     "@chakra-ui/react": "^3.17.0",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.97.0",
     "@tanstack/react-query-devtools": "^5.97.0",
     "@tanstack/react-router": "^1.168.15",
+    "ai": "^6.0.158",
     "better-auth": "^1.6.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

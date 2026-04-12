@@ -27,6 +27,9 @@ function HomePage() {
       </HStack>
       <Stack gap={4}>
         <Text color="fg.muted">ようこそ、{currentUser.name}さん</Text>
+        <Link to="/agents" style={{ color: "var(--chakra-colors-blue-500)" }}>
+          Agents と話す
+        </Link>
         <Link to="/users" style={{ color: "var(--chakra-colors-blue-500)" }}>
           ユーザー一覧を見る
         </Link>

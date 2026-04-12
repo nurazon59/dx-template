@@ -1,6 +1,20 @@
 import { z } from "zod";
 import { ReportDraftWorkflowResultSchema, TriageWorkflowResultSchema } from "@dx-template/workflow";
 
+export const AgentChatMessageSchema = z
+  .object({
+    id: z.string().optional(),
+    role: z.enum(["system", "user", "assistant"]),
+    parts: z.array(z.object({ type: z.string() }).passthrough()),
+  })
+  .passthrough();
+export type AgentChatMessage = z.infer<typeof AgentChatMessageSchema>;
+
+export const AgentChatInputSchema = z.object({
+  messages: z.array(AgentChatMessageSchema).min(1),
+});
+export type AgentChatInput = z.infer<typeof AgentChatInputSchema>;
+
 export const AgentRunInputSchema = z.object({
   message: z.string().min(1),
   actor: z

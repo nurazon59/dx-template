@@ -97,8 +97,119 @@ export type GetApiHealth200 = {
   status: "ok";
 };
 
+export type GetApiTime200 = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  timestamp: string;
+};
+
 export type GetApiMe200 = {
   user: AuthUser;
+};
+
+export type PostApiAgentRunsBodyActor = {
+  userId?: string;
+  slackUserId?: string;
+};
+
+export type PostApiAgentRunsBodySource =
+  (typeof PostApiAgentRunsBodySource)[keyof typeof PostApiAgentRunsBodySource];
+
+export const PostApiAgentRunsBodySource = {
+  web: "web",
+  slack: "slack",
+} as const;
+
+export type PostApiAgentRunsBody = {
+  /** @minLength 1 */
+  message: string;
+  actor?: PostApiAgentRunsBodyActor;
+  source: PostApiAgentRunsBodySource;
+};
+
+export type PostApiAgentRuns200Workflow =
+  (typeof PostApiAgentRuns200Workflow)[keyof typeof PostApiAgentRuns200Workflow];
+
+export const PostApiAgentRuns200Workflow = {
+  triage: "triage",
+  reportDraft: "reportDraft",
+} as const;
+
+export type PostApiAgentRuns200Result =
+  | {
+      kind: "triage";
+      intent: "report" | "approval" | "general" | "unknown";
+      summary: string;
+      nextAction: string;
+    }
+  | {
+      kind: "reportDraft";
+      title: string;
+      audience: string;
+      summary: string;
+      outline: string[];
+      draft: string;
+      nextAction: string;
+    };
+
+export type PostApiAgentRuns200TraceToolsItemToolName =
+  (typeof PostApiAgentRuns200TraceToolsItemToolName)[keyof typeof PostApiAgentRuns200TraceToolsItemToolName];
+
+export const PostApiAgentRuns200TraceToolsItemToolName = {
+  runTriage: "runTriage",
+  createReportDraft: "createReportDraft",
+} as const;
+
+export type PostApiAgentRuns200TraceToolsItemWorkflow =
+  (typeof PostApiAgentRuns200TraceToolsItemWorkflow)[keyof typeof PostApiAgentRuns200TraceToolsItemWorkflow];
+
+export const PostApiAgentRuns200TraceToolsItemWorkflow = {
+  triage: "triage",
+  reportDraft: "reportDraft",
+} as const;
+
+export type PostApiAgentRuns200TraceToolsItem = {
+  toolName: PostApiAgentRuns200TraceToolsItemToolName;
+  workflow: PostApiAgentRuns200TraceToolsItemWorkflow;
+  input: unknown;
+  output: unknown;
+};
+
+export type PostApiAgentRuns200Trace = {
+  tools: PostApiAgentRuns200TraceToolsItem[];
+};
+
+export type PostApiAgentRuns200 = {
+  runId: string;
+  workflow: PostApiAgentRuns200Workflow;
+  message: string;
+  result: PostApiAgentRuns200Result;
+  trace: PostApiAgentRuns200Trace;
+};
+
+export type PostApiAgentChatBodyMessagesItemRole =
+  (typeof PostApiAgentChatBodyMessagesItemRole)[keyof typeof PostApiAgentChatBodyMessagesItemRole];
+
+export const PostApiAgentChatBodyMessagesItemRole = {
+  system: "system",
+  user: "user",
+  assistant: "assistant",
+} as const;
+
+export type PostApiAgentChatBodyMessagesItemPartsItem = {
+  type: string;
+  [key: string]: unknown;
+};
+
+export type PostApiAgentChatBodyMessagesItem = {
+  id?: string;
+  role: PostApiAgentChatBodyMessagesItemRole;
+  parts: PostApiAgentChatBodyMessagesItemPartsItem[];
+  [key: string]: unknown;
+};
+
+export type PostApiAgentChatBody = {
+  /** @minItems 1 */
+  messages: PostApiAgentChatBodyMessagesItem[];
 };
 
 export type PostApiUploadsImagesPresign201 = {
@@ -309,6 +420,190 @@ export function useGetApiHealthSuspense<
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+export type getApiTimeResponse200 = {
+  data: GetApiTime200;
+  status: 200;
+};
+
+export type getApiTimeResponseSuccess = getApiTimeResponse200 & {
+  headers: Headers;
+};
+
+export type getApiTimeResponse = getApiTimeResponseSuccess;
+
+export const getGetApiTimeUrl = () => {
+  return `/api/time`;
+};
+
+export const getApiTime = async (options?: RequestInit): Promise<getApiTimeResponse> => {
+  const res = await fetch(getGetApiTimeUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiTimeResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiTimeResponse;
+};
+
+export const getGetApiTimeQueryKey = () => {
+  return [`/api/time`] as const;
+};
+
+export const getGetApiTimeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiTimeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTime>>> = ({ signal }) =>
+    getApiTime({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTime>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiTimeQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTime>>>;
+export type GetApiTimeQueryError = unknown;
+
+export function useGetApiTime<TData = Awaited<ReturnType<typeof getApiTime>>, TError = unknown>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiTime>>,
+          TError,
+          Awaited<ReturnType<typeof getApiTime>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTime<TData = Awaited<ReturnType<typeof getApiTime>>, TError = unknown>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiTime>>,
+          TError,
+          Awaited<ReturnType<typeof getApiTime>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTime<TData = Awaited<ReturnType<typeof getApiTime>>, TError = unknown>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiTime<TData = Awaited<ReturnType<typeof getApiTime>>, TError = unknown>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTimeQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiTimeSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiTimeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTime>>> = ({ signal }) =>
+    getApiTime({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiTime>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiTimeSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTime>>>;
+export type GetApiTimeSuspenseQueryError = unknown;
+
+export function useGetApiTimeSuspense<
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTimeSuspense<
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTimeSuspense<
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiTimeSuspense<
+  TData = Awaited<ReturnType<typeof getApiTime>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiTime>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTimeSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type getApiMeResponse200 = {
   data: GetApiMe200;
   status: 200;
@@ -488,6 +783,236 @@ export function useGetApiMeSuspense<TData = Awaited<ReturnType<typeof getApiMe>>
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export type postApiAgentRunsResponse200 = {
+  data: PostApiAgentRuns200;
+  status: 200;
+};
+
+export type postApiAgentRunsResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiAgentRunsResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiAgentRunsResponse500 = {
+  data: Error;
+  status: 500;
+};
+
+export type postApiAgentRunsResponseSuccess = postApiAgentRunsResponse200 & {
+  headers: Headers;
+};
+export type postApiAgentRunsResponseError = (
+  | postApiAgentRunsResponse400
+  | postApiAgentRunsResponse401
+  | postApiAgentRunsResponse500
+) & {
+  headers: Headers;
+};
+
+export type postApiAgentRunsResponse =
+  | postApiAgentRunsResponseSuccess
+  | postApiAgentRunsResponseError;
+
+export const getPostApiAgentRunsUrl = () => {
+  return `/api/agent/runs`;
+};
+
+export const postApiAgentRuns = async (
+  postApiAgentRunsBody: PostApiAgentRunsBody,
+  options?: RequestInit,
+): Promise<postApiAgentRunsResponse> => {
+  const res = await fetch(getPostApiAgentRunsUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postApiAgentRunsBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiAgentRunsResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as postApiAgentRunsResponse;
+};
+
+export const getPostApiAgentRunsMutationOptions = <TError = Error, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiAgentRuns>>,
+    TError,
+    { data: PostApiAgentRunsBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiAgentRuns>>,
+  TError,
+  { data: PostApiAgentRunsBody },
+  TContext
+> => {
+  const mutationKey = ["postApiAgentRuns"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiAgentRuns>>,
+    { data: PostApiAgentRunsBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiAgentRuns(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiAgentRunsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiAgentRuns>>
+>;
+export type PostApiAgentRunsMutationBody = PostApiAgentRunsBody;
+export type PostApiAgentRunsMutationError = Error;
+
+export const usePostApiAgentRuns = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiAgentRuns>>,
+      TError,
+      { data: PostApiAgentRunsBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiAgentRuns>>,
+  TError,
+  { data: PostApiAgentRunsBody },
+  TContext
+> => {
+  return useMutation(getPostApiAgentRunsMutationOptions(options), queryClient);
+};
+
+export type postApiAgentChatResponse200 = {
+  data: string;
+  status: 200;
+};
+
+export type postApiAgentChatResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiAgentChatResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiAgentChatResponse500 = {
+  data: Error;
+  status: 500;
+};
+
+export type postApiAgentChatResponseSuccess = postApiAgentChatResponse200 & {
+  headers: Headers;
+};
+export type postApiAgentChatResponseError = (
+  | postApiAgentChatResponse400
+  | postApiAgentChatResponse401
+  | postApiAgentChatResponse500
+) & {
+  headers: Headers;
+};
+
+export type postApiAgentChatResponse =
+  | postApiAgentChatResponseSuccess
+  | postApiAgentChatResponseError;
+
+export const getPostApiAgentChatUrl = () => {
+  return `/api/agent/chat`;
+};
+
+export const postApiAgentChat = async (
+  postApiAgentChatBody: PostApiAgentChatBody,
+  options?: RequestInit,
+): Promise<postApiAgentChatResponse> => {
+  const res = await fetch(getPostApiAgentChatUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postApiAgentChatBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiAgentChatResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as postApiAgentChatResponse;
+};
+
+export const getPostApiAgentChatMutationOptions = <TError = Error, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiAgentChat>>,
+    TError,
+    { data: PostApiAgentChatBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiAgentChat>>,
+  TError,
+  { data: PostApiAgentChatBody },
+  TContext
+> => {
+  const mutationKey = ["postApiAgentChat"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiAgentChat>>,
+    { data: PostApiAgentChatBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiAgentChat(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiAgentChatMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiAgentChat>>
+>;
+export type PostApiAgentChatMutationBody = PostApiAgentChatBody;
+export type PostApiAgentChatMutationError = Error;
+
+export const usePostApiAgentChat = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiAgentChat>>,
+      TError,
+      { data: PostApiAgentChatBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiAgentChat>>,
+  TError,
+  { data: PostApiAgentChatBody },
+  TContext
+> => {
+  return useMutation(getPostApiAgentChatMutationOptions(options), queryClient);
+};
 
 export type postApiUploadsImagesPresignResponse201 = {
   data: PostApiUploadsImagesPresign201;
