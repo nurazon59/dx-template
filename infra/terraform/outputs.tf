@@ -73,6 +73,16 @@ output "cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.web.domain_name
 }
 
+output "server_alb_dns_name" {
+  description = "server ALB DNS 名"
+  value       = aws_lb.server.dns_name
+}
+
+output "server_target_group_arn" {
+  description = "server target group ARN"
+  value       = aws_lb_target_group.server.arn
+}
+
 output "web_bucket_name" {
   description = "Web S3 バケット名"
   value       = aws_s3_bucket.web.id

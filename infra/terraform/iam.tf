@@ -130,6 +130,17 @@ data "aws_iam_policy_document" "github_actions" {
   }
 
   statement {
+    sid = "ELBRead"
+    actions = [
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTargetHealth",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     sid     = "PassRole"
     actions = ["iam:PassRole"]
     resources = [

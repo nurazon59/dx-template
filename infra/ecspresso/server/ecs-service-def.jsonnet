@@ -7,9 +7,17 @@
     maximumPercent: 200,
     minimumHealthyPercent: 100,
   },
-  desiredCount: 0,
+  desiredCount: 1,
   enableECSManagedTags: true,
+  healthCheckGracePeriodSeconds: 60,
   launchType: 'FARGATE',
+  loadBalancers: [
+    {
+      targetGroupArn: '{{ tfstate `aws_lb_target_group.server.arn` }}',
+      containerName: 'app',
+      containerPort: 3000,
+    },
+  ],
   networkConfiguration: {
     awsvpcConfiguration: {
       assignPublicIp: 'ENABLED',

@@ -17,6 +17,16 @@
           protocol: 'tcp',
         },
       ],
+      environment: [
+        {
+          name: 'BETTER_AUTH_URL',
+          value: 'https://{{ tfstate `aws_cloudfront_distribution.web.domain_name` }}',
+        },
+        {
+          name: 'BETTER_AUTH_TRUSTED_ORIGINS',
+          value: 'https://{{ tfstate `aws_cloudfront_distribution.web.domain_name` }}',
+        },
+      ],
       secrets: [
         {
           name: 'SLACK_BOT_TOKEN',
