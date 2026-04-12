@@ -142,7 +142,7 @@ export const agentRoute = new Hono<Env>()
     async (c) => {
       const input = c.req.valid("json");
       const user = c.get("user")!;
-      const context = createWorkflowContext();
+      const context = createWorkflowContext({ db: c.var.db, userId: user.id });
       const result = await runAgent(
         {
           ...input,
@@ -218,7 +218,7 @@ export const agentRoute = new Hono<Env>()
       }
 
       try {
-        const context = createWorkflowContext();
+        const context = createWorkflowContext({ db: c.var.db, userId: user.id });
         return await streamAgentChat(
           {
             conversationId,

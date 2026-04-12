@@ -6,9 +6,16 @@ import {
   buildChartBuffer,
 } from "@dx-template/shared";
 import { getFileBuffer, putFileBuffer } from "./s3.js";
+import { search as searchFiles } from "../repositories/files.js";
+import type { Database } from "./context.js";
 
-export function createWorkflowContext(): WorkflowContext {
+export function createWorkflowContext(options?: {
+  db?: Database;
+  userId?: string;
+}): WorkflowContext {
+  const { db, userId } = options ?? {};
   return {
+    userId,
     queries: {
       fetchFileBuffer: getFileBuffer,
       storeFileBuffer: putFileBuffer,
@@ -16,6 +23,7 @@ export function createWorkflowContext(): WorkflowContext {
       parsePdf: parsePdfBuffer,
       buildXlsx: buildXlsxBuffer,
       buildChart: buildChartBuffer,
+      searchFiles: db ? (params) => searchFiles(db, params) : undefined,
     },
   };
 }

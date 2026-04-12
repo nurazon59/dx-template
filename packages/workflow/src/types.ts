@@ -7,7 +7,17 @@ import type {
   ChartCreateInput,
 } from "@dx-template/shared";
 
+export interface FileSearchResult {
+  id: string;
+  objectKey: string;
+  fileName: string;
+  contentType: string;
+  contentLength: number;
+  createdAt: Date;
+}
+
 export interface WorkflowContext {
+  userId?: string;
   queries: {
     fetchFileBuffer?: (objectKey: string) => Promise<Uint8Array>;
     storeFileBuffer?: (
@@ -19,6 +29,11 @@ export interface WorkflowContext {
     buildXlsx?: (sheets: XlsxCreateSheetInput[]) => Promise<Uint8Array>;
     parsePdf?: (buffer: Uint8Array, options?: PdfParseOptions) => Promise<PdfPage[]>;
     buildChart?: (input: ChartCreateInput) => Promise<Uint8Array>;
+    searchFiles?: (params: {
+      query?: string;
+      contentType?: string;
+      userId: string;
+    }) => Promise<FileSearchResult[]>;
   };
 }
 

@@ -14,6 +14,7 @@ import { xlsxParseTool } from "../tools/xlsx-parse.js";
 import { pdfParseTool } from "../tools/pdf-parse.js";
 import { xlsxCreateTool } from "../tools/xlsx-create.js";
 import { chartCreateTool } from "../tools/chart-create.js";
+import { fileSearchTool } from "../tools/file-search.js";
 import type {
   AgentChatInput,
   AgentRunInput,
@@ -126,6 +127,9 @@ function createTools(
     createChart: chartCreateTool(context, {
       message: state.message,
       setWorkflow: state.setWorkflow,
+      toolTrace: state.toolTrace,
+    }),
+    searchFiles: fileSearchTool(context, {
       toolTrace: state.toolTrace,
     }),
   };

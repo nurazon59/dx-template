@@ -58,8 +58,17 @@ export const AgentToolTraceSchema = z.object({
     "parsePdf",
     "createXlsx",
     "createChart",
+    "searchFiles",
   ]),
-  workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse", "xlsxCreate", "chartCreate"]),
+  workflow: z.enum([
+    "triage",
+    "reportDraft",
+    "xlsxParse",
+    "pdfParse",
+    "xlsxCreate",
+    "chartCreate",
+    "fileSearch",
+  ]),
   input: z.unknown(),
   output: z.unknown(),
 });
