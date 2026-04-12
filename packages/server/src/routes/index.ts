@@ -5,6 +5,7 @@ import type { Env } from "../lib/context.js";
 import { AuthUserSchema } from "../schemas/auth.js";
 import { ErrorSchema } from "../schemas/error.js";
 import { requireAuth } from "../middleware/auth.js";
+import { uploadsRoute } from "./uploads.js";
 import { usersRoute } from "./users.js";
 
 const app = new Hono<Env>()
@@ -54,6 +55,7 @@ const app = new Hono<Env>()
       return c.json({ user });
     },
   )
+  .route("/uploads", uploadsRoute)
   .route("/users", usersRoute);
 
 export { app as routes };

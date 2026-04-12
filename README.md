@@ -26,6 +26,10 @@ SLACK_BOT_TOKEN=xoxb-your-bot-token
 SLACK_APP_TOKEN=xapp-your-app-token
 BETTER_AUTH_SECRET=your-secret-key-generate-with-openssl-rand-base64-32
 BETTER_AUTH_URL=http://localhost:3000
+S3_UPLOAD_BUCKET=dx-template-uploads
+S3_PUBLIC_BASE_URL=https://cdn.example.com
+# S3_ENDPOINT=http://localhost:9000
+# S3_FORCE_PATH_STYLE=true
 ```
 
 ## コマンド方針
@@ -61,6 +65,13 @@ OpenAPI と web API クライアントの生成:
 ```sh
 task api:generate
 ```
+
+## 画像アップロード
+
+画像は API server で署名付き URL を発行し、ブラウザから S3 互換 storage に直接 `PUT` する。
+web 側は `packages/web/src/lib/uploads.ts` の `uploadImage(file)` を使う。
+
+対応形式は `image/jpeg`、`image/png`、`image/webp`、上限は 20 MiB。storage 側では web origin からの `PUT` と `Content-Type` header を許可する CORS 設定が必要。
 
 ## プロジェクト構成
 

@@ -41,6 +41,40 @@ export interface Error {
   message: string;
 }
 
+export interface ImageUploadUrl {
+  uploadUrl: string;
+  objectKey: string;
+  publicUrl?: string;
+  /**
+   * @maximum 9007199254740991
+   * @exclusiveMinimum 0
+   */
+  expiresIn: number;
+}
+
+export type CreateImageUploadUrlInputContentType =
+  (typeof CreateImageUploadUrlInputContentType)[keyof typeof CreateImageUploadUrlInputContentType];
+
+export const CreateImageUploadUrlInputContentType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+} as const;
+
+export interface CreateImageUploadUrlInput {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  fileName: string;
+  contentType: CreateImageUploadUrlInputContentType;
+  /**
+   * @maximum 20971520
+   * @exclusiveMinimum 0
+   */
+  contentLength: number;
+}
+
 export interface User {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -65,6 +99,10 @@ export type GetApiHealth200 = {
 
 export type GetApiMe200 = {
   user: AuthUser;
+};
+
+export type PostApiUploadsImagesPresign201 = {
+  upload: ImageUploadUrl;
 };
 
 export type GetApiUsers200 = {
@@ -450,6 +488,124 @@ export function useGetApiMeSuspense<TData = Awaited<ReturnType<typeof getApiMe>>
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export type postApiUploadsImagesPresignResponse201 = {
+  data: PostApiUploadsImagesPresign201;
+  status: 201;
+};
+
+export type postApiUploadsImagesPresignResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiUploadsImagesPresignResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiUploadsImagesPresignResponse500 = {
+  data: Error;
+  status: 500;
+};
+
+export type postApiUploadsImagesPresignResponseSuccess = postApiUploadsImagesPresignResponse201 & {
+  headers: Headers;
+};
+export type postApiUploadsImagesPresignResponseError = (
+  | postApiUploadsImagesPresignResponse400
+  | postApiUploadsImagesPresignResponse401
+  | postApiUploadsImagesPresignResponse500
+) & {
+  headers: Headers;
+};
+
+export type postApiUploadsImagesPresignResponse =
+  | postApiUploadsImagesPresignResponseSuccess
+  | postApiUploadsImagesPresignResponseError;
+
+export const getPostApiUploadsImagesPresignUrl = () => {
+  return `/api/uploads/images/presign`;
+};
+
+export const postApiUploadsImagesPresign = async (
+  createImageUploadUrlInput: CreateImageUploadUrlInput,
+  options?: RequestInit,
+): Promise<postApiUploadsImagesPresignResponse> => {
+  const res = await fetch(getPostApiUploadsImagesPresignUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createImageUploadUrlInput),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiUploadsImagesPresignResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as postApiUploadsImagesPresignResponse;
+};
+
+export const getPostApiUploadsImagesPresignMutationOptions = <
+  TError = Error,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiUploadsImagesPresign>>,
+    TError,
+    { data: CreateImageUploadUrlInput },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiUploadsImagesPresign>>,
+  TError,
+  { data: CreateImageUploadUrlInput },
+  TContext
+> => {
+  const mutationKey = ["postApiUploadsImagesPresign"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiUploadsImagesPresign>>,
+    { data: CreateImageUploadUrlInput }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiUploadsImagesPresign(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiUploadsImagesPresignMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiUploadsImagesPresign>>
+>;
+export type PostApiUploadsImagesPresignMutationBody = CreateImageUploadUrlInput;
+export type PostApiUploadsImagesPresignMutationError = Error;
+
+export const usePostApiUploadsImagesPresign = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiUploadsImagesPresign>>,
+      TError,
+      { data: CreateImageUploadUrlInput },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiUploadsImagesPresign>>,
+  TError,
+  { data: CreateImageUploadUrlInput },
+  TContext
+> => {
+  return useMutation(getPostApiUploadsImagesPresignMutationOptions(options), queryClient);
+};
 
 export type getApiUsersResponse200 = {
   data: GetApiUsers200;
