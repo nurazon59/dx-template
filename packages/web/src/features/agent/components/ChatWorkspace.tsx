@@ -3,6 +3,7 @@ import {
   Button,
   Field,
   HStack,
+  IconButton,
   Input,
   NativeSelect,
   Stack,
@@ -17,6 +18,8 @@ import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { ChatMessageBubble } from "./ChatMessageBubble";
+import { FilePreviewList } from "./FilePreviewList";
+import { useFileUpload, buildMessageWithFiles } from "../hooks/useFileUpload";
 
 const defaultModels = {
   openai: "gpt-5.4-mini",
@@ -72,6 +75,17 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
   const isSending = status === "submitted" || status === "streaming";
 
   const {
+    files: selectedFiles,
+    uploading,
+    fileInputRef,
+    addFiles,
+    removeFile,
+    uploadAll,
+    reset: resetFiles,
+    openFilePicker,
+  } = useFileUpload();
+
+  const {
     register,
     handleSubmit,
     reset,
@@ -82,10 +96,17 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
   });
 
   const onSubmit = async (data: MessageFormValues) => {
-    if (isSending) return;
+    if (isSending || uploading) return;
+
+    let messageText = data.message;
+
+    if (selectedFiles.length > 0) {
+      const uploaded = await uploadAll();
+      messageText = buildMessageWithFiles(data.message, uploaded);
+    }
 
     await sendMessage(
-      { text: data.message },
+      { text: messageText },
       {
         body: {
           model: model.trim(),
@@ -94,6 +115,7 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
       },
     );
     reset({ message: "" });
+    resetFiles();
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -152,14 +174,39 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
               </Field.Root>
             </Box>
           </HStack>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".xlsx,.pdf,.jpg,.jpeg,.png,.webp"
+            hidden
+            onChange={(e) => {
+              if (e.target.files) addFiles(e.target.files);
+            }}
+          />
+          <FilePreviewList files={selectedFiles} uploading={uploading} onRemove={removeFile} />
           <Field.Root invalid={!!errors.message}>
-            <Textarea
-              {...register("message")}
-              placeholder="依頼内容を入力"
-              autoresize
-              minH="96px"
-              disabled={isSending}
-            />
+            <HStack align="flex-start" gap={2}>
+              <IconButton
+                aria-label="ファイルを添付"
+                variant="ghost"
+                size="sm"
+                mt={2}
+                onClick={openFilePicker}
+                disabled={isSending || uploading}
+              >
+                📎
+              </IconButton>
+              <Box flex="1">
+                <Textarea
+                  {...register("message")}
+                  placeholder="依頼内容を入力"
+                  autoresize
+                  minH="96px"
+                  disabled={isSending}
+                />
+              </Box>
+            </HStack>
             <Field.ErrorText>{errors.message?.message}</Field.ErrorText>
           </Field.Root>
           <HStack justify="space-between">
