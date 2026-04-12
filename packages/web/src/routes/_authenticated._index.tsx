@@ -2,7 +2,7 @@ import { Button, Container, HStack, Heading, Stack, Text } from "@chakra-ui/reac
 import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { authClient } from "../lib/auth";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/_index")({
   beforeLoad: async () => {
     const { data } = await authClient.getSession();
     if (!data?.user) {

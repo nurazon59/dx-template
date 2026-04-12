@@ -3,7 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useGetApiUsersSuspense } from "../lib/api/generated";
 import { authClient } from "../lib/auth";
 
-export const Route = createFileRoute("/users")({
+export const Route = createFileRoute("/_authenticated/users")({
   beforeLoad: async () => {
     const { data } = await authClient.getSession();
     if (!data?.user) {
