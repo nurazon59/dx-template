@@ -13,7 +13,7 @@ const mockedExtractText = vi.mocked(extractText);
 function mockPages(...texts: string[]) {
   mockedExtractText.mockResolvedValueOnce({
     totalPages: texts.length,
-    text: texts,
+    text: texts as unknown as string,
   });
 }
 
