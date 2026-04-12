@@ -52,6 +52,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/agent/conversations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getApiAgentConversations"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/agent/conversations/{conversationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getApiAgentConversationsByConversationId"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/agent/runs": {
     parameters: {
       query?: never;
@@ -62,6 +94,54 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["postApiAgentRuns"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/agent/chat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["postApiAgentChat"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/files/presign": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["postApiFilesPresign"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/files/{objectKey}/download": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getApiFilesByObjectKeyDownload"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -135,6 +215,63 @@ export interface components {
     Error: {
       code: string;
       message: string;
+    };
+    AgentConversationSummary: {
+      /** Format: uuid */
+      id: string;
+      title: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: date-time */
+      lastMessageAt: string;
+    };
+    AgentMessage: {
+      id: string;
+      /** @enum {string} */
+      role: "system" | "user" | "assistant";
+      parts: ({
+        type: string;
+      } & {
+        [key: string]: unknown;
+      })[];
+      /** Format: date-time */
+      createdAt: string;
+    };
+    AgentConversation: {
+      /** Format: uuid */
+      id: string;
+      title: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: date-time */
+      lastMessageAt: string;
+      messages: components["schemas"]["AgentMessage"][];
+    };
+    FileUploadUrl: {
+      /** Format: uri */
+      uploadUrl: string;
+      objectKey: string;
+      expiresIn: number;
+    };
+    CreateFileUploadUrlInput: {
+      fileName: string;
+      /** @enum {string} */
+      contentType:
+        | "image/jpeg"
+        | "image/png"
+        | "image/webp"
+        | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        | "application/pdf";
+      contentLength: number;
+    };
+    FileDownloadUrl: {
+      /** Format: uri */
+      downloadUrl: string;
+      expiresIn: number;
     };
     ImageUploadUrl: {
       /** Format: uri */
@@ -250,6 +387,79 @@ export interface operations {
       };
     };
   };
+  getApiAgentConversations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Agent conversation list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            conversations: components["schemas"]["AgentConversationSummary"][];
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  getApiAgentConversationsByConversationId: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Agent conversation */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            conversation: components["schemas"]["AgentConversation"];
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description 会話が見つからない */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
   postApiAgentRuns: {
     parameters: {
       query?: never;
@@ -280,7 +490,7 @@ export interface operations {
           "application/json": {
             runId: string;
             /** @enum {string} */
-            workflow: "triage" | "reportDraft";
+            workflow: "triage" | "reportDraft" | "xlsxParse";
             message: string;
             result:
               | {
@@ -300,13 +510,25 @@ export interface operations {
                   outline: string[];
                   draft: string;
                   nextAction: string;
+                }
+              | {
+                  /** @constant */
+                  kind: "xlsxParse";
+                  sheets: {
+                    name: string;
+                    headers: string[];
+                    rowCount: number;
+                    data: {
+                      [key: string]: unknown;
+                    }[];
+                  }[];
                 };
             trace: {
               tools: {
                 /** @enum {string} */
-                toolName: "runTriage" | "createReportDraft";
+                toolName: "runTriage" | "createReportDraft" | "parseXlsx";
                 /** @enum {string} */
-                workflow: "triage" | "reportDraft";
+                workflow: "triage" | "reportDraft" | "xlsxParse";
                 input: unknown;
                 output: unknown;
               }[];
@@ -323,7 +545,180 @@ export interface operations {
           "application/json": components["schemas"]["Error"];
         };
       };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
       /** @description Agent 実行エラー */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  postApiAgentChat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          /** Format: uuid */
+          conversationId?: string;
+          messages: ({
+            id?: string;
+            /** @enum {string} */
+            role: "system" | "user" | "assistant";
+            parts: ({
+              type: string;
+            } & {
+              [key: string]: unknown;
+            })[];
+          } & {
+            [key: string]: unknown;
+          })[];
+          /** @enum {string} */
+          provider?: "openai" | "google";
+          model?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Agent chat stream */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/event-stream": string;
+        };
+      };
+      /** @description 入力値が不正 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description Agent 実行エラー */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  postApiFilesPresign: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateFileUploadUrlInput"];
+      };
+    };
+    responses: {
+      /** @description ファイルアップロード用の署名付き URL を発行 */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            upload: components["schemas"]["FileUploadUrl"];
+          };
+        };
+      };
+      /** @description 入力値が不正 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description アップロード storage 設定不備 */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  getApiFilesByObjectKeyDownload: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        objectKey: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 署名付きダウンロード URL を発行 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            download: components["schemas"]["FileDownloadUrl"];
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description ダウンロード URL 発行エラー */
       500: {
         headers: {
           [name: string]: unknown;

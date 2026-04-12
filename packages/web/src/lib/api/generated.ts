@@ -87,6 +87,51 @@ export interface AgentConversation {
   messages: AgentMessage[];
 }
 
+export interface FileUploadUrl {
+  uploadUrl: string;
+  objectKey: string;
+  /**
+   * @maximum 9007199254740991
+   * @exclusiveMinimum 0
+   */
+  expiresIn: number;
+}
+
+export type CreateFileUploadUrlInputContentType =
+  (typeof CreateFileUploadUrlInputContentType)[keyof typeof CreateFileUploadUrlInputContentType];
+
+export const CreateFileUploadUrlInputContentType = {
+  "image/jpeg": "image/jpeg",
+  "image/png": "image/png",
+  "image/webp": "image/webp",
+  "application/vndopenxmlformats-officedocumentspreadsheetmlsheet":
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/pdf": "application/pdf",
+} as const;
+
+export interface CreateFileUploadUrlInput {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  fileName: string;
+  contentType: CreateFileUploadUrlInputContentType;
+  /**
+   * @maximum 52428800
+   * @exclusiveMinimum 0
+   */
+  contentLength: number;
+}
+
+export interface FileDownloadUrl {
+  downloadUrl: string;
+  /**
+   * @maximum 9007199254740991
+   * @exclusiveMinimum 0
+   */
+  expiresIn: number;
+}
+
 export interface ImageUploadUrl {
   uploadUrl: string;
   objectKey: string;
@@ -186,6 +231,7 @@ export type PostApiAgentRuns200Workflow =
 export const PostApiAgentRuns200Workflow = {
   triage: "triage",
   reportDraft: "reportDraft",
+  xlsxParse: "xlsxParse",
 } as const;
 
 export type PostApiAgentRuns200Result =
@@ -203,6 +249,15 @@ export type PostApiAgentRuns200Result =
       outline: string[];
       draft: string;
       nextAction: string;
+    }
+  | {
+      kind: "xlsxParse";
+      sheets: {
+        name: string;
+        headers: string[];
+        rowCount: number;
+        data: { [key: string]: unknown }[];
+      }[];
     };
 
 export type PostApiAgentRuns200TraceToolsItemToolName =
@@ -211,6 +266,7 @@ export type PostApiAgentRuns200TraceToolsItemToolName =
 export const PostApiAgentRuns200TraceToolsItemToolName = {
   runTriage: "runTriage",
   createReportDraft: "createReportDraft",
+  parseXlsx: "parseXlsx",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItemWorkflow =
@@ -219,6 +275,7 @@ export type PostApiAgentRuns200TraceToolsItemWorkflow =
 export const PostApiAgentRuns200TraceToolsItemWorkflow = {
   triage: "triage",
   reportDraft: "reportDraft",
+  xlsxParse: "xlsxParse",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItem = {
@@ -270,11 +327,21 @@ export const PostApiAgentChatBodyProvider = {
 } as const;
 
 export type PostApiAgentChatBody = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  conversationId?: string;
   /** @minItems 1 */
   messages: PostApiAgentChatBodyMessagesItem[];
   provider?: PostApiAgentChatBodyProvider;
   /** @minLength 1 */
   model?: string;
+};
+
+export type PostApiFilesPresign201 = {
+  upload: FileUploadUrl;
+};
+
+export type GetApiFilesByObjectKeyDownload200 = {
+  download: FileDownloadUrl;
 };
 
 export type PostApiUploadsImagesPresign201 = {
@@ -1626,6 +1693,406 @@ export const usePostApiAgentChat = <TError = Error, TContext = unknown>(
 > => {
   return useMutation(getPostApiAgentChatMutationOptions(options), queryClient);
 };
+
+export type postApiFilesPresignResponse201 = {
+  data: PostApiFilesPresign201;
+  status: 201;
+};
+
+export type postApiFilesPresignResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiFilesPresignResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiFilesPresignResponse500 = {
+  data: Error;
+  status: 500;
+};
+
+export type postApiFilesPresignResponseSuccess = postApiFilesPresignResponse201 & {
+  headers: Headers;
+};
+export type postApiFilesPresignResponseError = (
+  | postApiFilesPresignResponse400
+  | postApiFilesPresignResponse401
+  | postApiFilesPresignResponse500
+) & {
+  headers: Headers;
+};
+
+export type postApiFilesPresignResponse =
+  | postApiFilesPresignResponseSuccess
+  | postApiFilesPresignResponseError;
+
+export const getPostApiFilesPresignUrl = () => {
+  return `/api/files/presign`;
+};
+
+export const postApiFilesPresign = async (
+  createFileUploadUrlInput: CreateFileUploadUrlInput,
+  options?: RequestInit,
+): Promise<postApiFilesPresignResponse> => {
+  const res = await fetch(getPostApiFilesPresignUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createFileUploadUrlInput),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiFilesPresignResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as postApiFilesPresignResponse;
+};
+
+export const getPostApiFilesPresignMutationOptions = <
+  TError = Error,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiFilesPresign>>,
+    TError,
+    { data: CreateFileUploadUrlInput },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiFilesPresign>>,
+  TError,
+  { data: CreateFileUploadUrlInput },
+  TContext
+> => {
+  const mutationKey = ["postApiFilesPresign"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiFilesPresign>>,
+    { data: CreateFileUploadUrlInput }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiFilesPresign(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiFilesPresignMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiFilesPresign>>
+>;
+export type PostApiFilesPresignMutationBody = CreateFileUploadUrlInput;
+export type PostApiFilesPresignMutationError = Error;
+
+export const usePostApiFilesPresign = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiFilesPresign>>,
+      TError,
+      { data: CreateFileUploadUrlInput },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiFilesPresign>>,
+  TError,
+  { data: CreateFileUploadUrlInput },
+  TContext
+> => {
+  return useMutation(getPostApiFilesPresignMutationOptions(options), queryClient);
+};
+
+export type getApiFilesByObjectKeyDownloadResponse200 = {
+  data: GetApiFilesByObjectKeyDownload200;
+  status: 200;
+};
+
+export type getApiFilesByObjectKeyDownloadResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiFilesByObjectKeyDownloadResponse500 = {
+  data: Error;
+  status: 500;
+};
+
+export type getApiFilesByObjectKeyDownloadResponseSuccess =
+  getApiFilesByObjectKeyDownloadResponse200 & {
+    headers: Headers;
+  };
+export type getApiFilesByObjectKeyDownloadResponseError = (
+  | getApiFilesByObjectKeyDownloadResponse401
+  | getApiFilesByObjectKeyDownloadResponse500
+) & {
+  headers: Headers;
+};
+
+export type getApiFilesByObjectKeyDownloadResponse =
+  | getApiFilesByObjectKeyDownloadResponseSuccess
+  | getApiFilesByObjectKeyDownloadResponseError;
+
+export const getGetApiFilesByObjectKeyDownloadUrl = (objectKey: string) => {
+  return `/api/files/${objectKey}/download`;
+};
+
+export const getApiFilesByObjectKeyDownload = async (
+  objectKey: string,
+  options?: RequestInit,
+): Promise<getApiFilesByObjectKeyDownloadResponse> => {
+  const res = await fetch(getGetApiFilesByObjectKeyDownloadUrl(objectKey), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiFilesByObjectKeyDownloadResponse["data"] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getApiFilesByObjectKeyDownloadResponse;
+};
+
+export const getGetApiFilesByObjectKeyDownloadQueryKey = (objectKey: string) => {
+  return [`/api/files/${objectKey}/download`] as const;
+};
+
+export const getGetApiFilesByObjectKeyDownloadQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiFilesByObjectKeyDownloadQueryKey(objectKey);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>> = ({
+    signal,
+  }) => getApiFilesByObjectKeyDownload(objectKey, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, enabled: !!objectKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiFilesByObjectKeyDownloadQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>
+>;
+export type GetApiFilesByObjectKeyDownloadQueryError = Error;
+
+export function useGetApiFilesByObjectKeyDownload<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+          TError,
+          Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiFilesByObjectKeyDownload<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+          TError,
+          Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiFilesByObjectKeyDownload<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiFilesByObjectKeyDownload<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiFilesByObjectKeyDownloadQueryOptions(objectKey, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiFilesByObjectKeyDownloadSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiFilesByObjectKeyDownloadQueryKey(objectKey);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>> = ({
+    signal,
+  }) => getApiFilesByObjectKeyDownload(objectKey, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiFilesByObjectKeyDownloadSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>
+>;
+export type GetApiFilesByObjectKeyDownloadSuspenseQueryError = Error;
+
+export function useGetApiFilesByObjectKeyDownloadSuspense<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiFilesByObjectKeyDownloadSuspense<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiFilesByObjectKeyDownloadSuspense<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiFilesByObjectKeyDownloadSuspense<
+  TData = Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+  TError = Error,
+>(
+  objectKey: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiFilesByObjectKeyDownload>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiFilesByObjectKeyDownloadSuspenseQueryOptions(objectKey, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 export type postApiUploadsImagesPresignResponse201 = {
   data: PostApiUploadsImagesPresign201;

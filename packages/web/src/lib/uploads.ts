@@ -63,3 +63,70 @@ function isSupportedImageContentType(
     contentType as CreateImageUploadUrlInput["contentType"],
   );
 }
+
+type CreateFileUploadUrlInput = {
+  fileName: string;
+  contentType: string;
+  contentLength: number;
+};
+
+type FileUploadUrl = {
+  uploadUrl: string;
+  objectKey: string;
+  expiresIn: number;
+};
+
+const SUPPORTED_FILE_CONTENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/pdf",
+];
+
+const MAX_FILE_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024;
+
+export async function uploadFile(
+  file: File,
+  options?: { signal?: AbortSignal },
+): Promise<FileUploadUrl> {
+  if (!SUPPORTED_FILE_CONTENT_TYPES.includes(file.type)) {
+    throw new Error("対応していないファイル形式です");
+  }
+
+  if (file.size > MAX_FILE_UPLOAD_SIZE_BYTES) {
+    throw new Error("ファイルサイズが上限を超えています");
+  }
+
+  const body: CreateFileUploadUrlInput = {
+    fileName: file.name,
+    contentType: file.type,
+    contentLength: file.size,
+  };
+
+  const presignResponse = await fetch("/api/files/presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: options?.signal,
+  });
+
+  if (!presignResponse.ok) {
+    throw new Error("アップロード URL の発行に失敗しました");
+  }
+
+  const { upload } = (await presignResponse.json()) as { upload: FileUploadUrl };
+
+  const uploadResponse = await fetch(upload.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+    signal: options?.signal,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("ファイルアップロードに失敗しました");
+  }
+
+  return upload;
+}

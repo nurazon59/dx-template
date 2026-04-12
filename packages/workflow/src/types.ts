@@ -1,5 +1,15 @@
+import type { XlsxParseOptions, XlsxSheet } from "@dx-template/shared";
+
 export interface WorkflowContext {
-  queries: Record<string, (...args: unknown[]) => Promise<unknown>>;
+  queries: {
+    fetchFileBuffer?: (objectKey: string) => Promise<Uint8Array>;
+    storeFileBuffer?: (
+      buffer: Uint8Array,
+      fileName: string,
+      contentType: string,
+    ) => Promise<string>;
+    parseXlsx?: (buffer: Uint8Array, options?: XlsxParseOptions) => Promise<XlsxSheet[]>;
+  };
 }
 
 export interface Job {

@@ -14,7 +14,17 @@ vi.mock("../lib/auth.js", () => ({
 vi.mock("../lib/s3.js", () => ({
   ALLOWED_IMAGE_CONTENT_TYPES: ["image/jpeg", "image/png", "image/webp"],
   MAX_IMAGE_UPLOAD_SIZE_BYTES: 20 * 1024 * 1024,
+  ALLOWED_FILE_CONTENT_TYPES: [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/pdf",
+  ],
+  MAX_FILE_UPLOAD_SIZE_BYTES: 50 * 1024 * 1024,
   createImageUploadUrl: vi.fn(),
+  createFileUploadUrl: vi.fn(),
+  getFileBuffer: vi.fn(),
 }));
 
 import { app } from "../app.js";

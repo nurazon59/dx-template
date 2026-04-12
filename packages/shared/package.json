@@ -1,5 +1,5 @@
 {
-  "name": "@dx-template/workflow",
+  "name": "@dx-template/shared",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@dx-template/shared": "workspace:*",
+    "exceljs": "^4.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

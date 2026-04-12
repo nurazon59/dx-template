@@ -2,12 +2,14 @@ import type { WorkflowContext } from "./types.js";
 import { jobStore } from "./runner.js";
 import { triageWorkflow } from "./workflows/triage.js";
 import { reportWorkflow } from "./workflows/report.js";
+import { xlsxParseWorkflow } from "./workflows/xlsx-parse.js";
 
 export { jobStore };
 
 export const workflowRegistry = {
   triage: triageWorkflow,
   report: reportWorkflow,
+  xlsxParse: xlsxParseWorkflow,
 };
 
 export type WorkflowType = keyof typeof workflowRegistry;
