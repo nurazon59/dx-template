@@ -4,6 +4,7 @@ import {
   TriageWorkflowResultSchema,
   XlsxParseResultSchema,
   PdfParseResultSchema,
+  XlsxCreateResultSchema,
 } from "@dx-template/workflow";
 
 export const AgentProviderSchema = z.enum(["openai", "google"]);
@@ -43,12 +44,13 @@ export const AgentWorkflowResultSchema = z.union([
   ReportDraftWorkflowResultSchema,
   XlsxParseResultSchema,
   PdfParseResultSchema,
+  XlsxCreateResultSchema,
 ]);
 export type AgentWorkflowResult = z.infer<typeof AgentWorkflowResultSchema>;
 
 export const AgentToolTraceSchema = z.object({
-  toolName: z.enum(["runTriage", "createReportDraft", "parseXlsx", "parsePdf"]),
-  workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse"]),
+  toolName: z.enum(["runTriage", "createReportDraft", "parseXlsx", "parsePdf", "createXlsx"]),
+  workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse", "xlsxCreate"]),
   input: z.unknown(),
   output: z.unknown(),
 });
@@ -56,7 +58,7 @@ export type AgentToolTrace = z.infer<typeof AgentToolTraceSchema>;
 
 export const AgentRunResultSchema = z.object({
   runId: z.string(),
-  workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse"]),
+  workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse", "xlsxCreate"]),
   message: z.string(),
   result: AgentWorkflowResultSchema,
   trace: z.object({

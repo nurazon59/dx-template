@@ -19,3 +19,22 @@ export const XlsxParseResultSchema = z.object({
   sheets: z.array(XlsxSheetSchema),
 });
 export type XlsxParseResult = z.infer<typeof XlsxParseResultSchema>;
+
+export const XlsxCreateSheetInputSchema = z.object({
+  name: z.string(),
+  headers: z.array(z.string()),
+  data: z.array(z.record(z.string(), z.unknown())),
+});
+export type XlsxCreateSheetInput = z.infer<typeof XlsxCreateSheetInputSchema>;
+
+export const XlsxCreateOptionsSchema = z.object({
+  sheets: z.array(XlsxCreateSheetInputSchema),
+});
+export type XlsxCreateOptions = z.infer<typeof XlsxCreateOptionsSchema>;
+
+export const XlsxCreateResultSchema = z.object({
+  kind: z.literal("xlsxCreate"),
+  objectKey: z.string(),
+  downloadUrl: z.string(),
+});
+export type XlsxCreateResult = z.infer<typeof XlsxCreateResultSchema>;

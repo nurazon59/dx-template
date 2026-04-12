@@ -3,6 +3,7 @@ import { jobStore } from "./runner.js";
 import { triageWorkflow } from "./workflows/triage.js";
 import { reportWorkflow } from "./workflows/report.js";
 import { xlsxParseWorkflow } from "./workflows/xlsx-parse.js";
+import { xlsxCreateWorkflow } from "./workflows/xlsx-create.js";
 import { pdfParseWorkflow } from "./workflows/pdf-parse.js";
 
 export { jobStore };
@@ -11,6 +12,7 @@ export const workflowRegistry = {
   triage: triageWorkflow,
   report: reportWorkflow,
   xlsxParse: xlsxParseWorkflow,
+  xlsxCreate: xlsxCreateWorkflow,
   pdfParse: pdfParseWorkflow,
 };
 

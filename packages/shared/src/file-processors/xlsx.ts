@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import type { XlsxParseOptions, XlsxSheet } from "../schemas/xlsx.js";
+import type { XlsxCreateSheetInput, XlsxParseOptions, XlsxSheet } from "../schemas/xlsx.js";
 
 export async function parseXlsxBuffer(
   buffer: Uint8Array,
@@ -51,4 +51,21 @@ export async function parseXlsxBuffer(
       data,
     };
   });
+}
+
+export async function buildXlsxBuffer(sheets: XlsxCreateSheetInput[]): Promise<Uint8Array> {
+  const workbook = new ExcelJS.Workbook();
+
+  for (const sheet of sheets) {
+    const worksheet = workbook.addWorksheet(sheet.name);
+    worksheet.addRow(sheet.headers);
+
+    for (const record of sheet.data) {
+      const row = sheet.headers.map((header) => record[header] ?? null);
+      worksheet.addRow(row);
+    }
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return new Uint8Array(buffer);
 }

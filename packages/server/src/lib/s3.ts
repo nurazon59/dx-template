@@ -158,3 +158,26 @@ export async function createFileDownloadUrl(
 
   return { downloadUrl, expiresIn: UPLOAD_URL_EXPIRES_IN_SECONDS };
 }
+
+export async function putFileBuffer(
+  buffer: Uint8Array,
+  fileName: string,
+  contentType: string,
+): Promise<string> {
+  const bucket = env.S3_UPLOAD_BUCKET ?? env.S3_BUCKET;
+  if (!bucket) {
+    throw new AppError("UPLOAD_STORAGE_NOT_CONFIGURED", "Upload storage is not configured", 500);
+  }
+
+  const objectKey = `uploads/files/${randomUUID()}/${fileName}`;
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: objectKey,
+      Body: buffer,
+      ContentType: contentType,
+    }),
+  );
+
+  return objectKey;
+}

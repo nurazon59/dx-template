@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import ExcelJS from "exceljs";
-import { parseXlsxBuffer } from "./xlsx.js";
+import { parseXlsxBuffer, buildXlsxBuffer } from "./xlsx.js";
 
 async function createTestXlsx(
   sheets: { name: string; headers: string[]; rows: unknown[][] }[],
@@ -84,5 +84,58 @@ describe("parseXlsxBuffer", () => {
 
     expect(result[0].rowCount).toBe(2);
     expect(result[0].data).toEqual([{ 名前: "田中" }, { 名前: "鈴木" }]);
+  });
+});
+
+describe("buildXlsxBuffer", () => {
+  it("作成→パースのラウンドトリップで元データを復元できる", async () => {
+    const sheets = [
+      {
+        name: "売上",
+        headers: ["月", "金額"],
+        data: [
+          { 月: "1月", 金額: 100 },
+          { 月: "2月", 金額: 200 },
+        ],
+      },
+    ];
+
+    const buffer = await buildXlsxBuffer(sheets);
+    const parsed = await parseXlsxBuffer(buffer);
+
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].name).toBe("売上");
+    expect(parsed[0].headers).toEqual(["月", "金額"]);
+    expect(parsed[0].rowCount).toBe(2);
+    expect(parsed[0].data).toEqual([
+      { 月: "1月", 金額: 100 },
+      { 月: "2月", 金額: 200 },
+    ]);
+  });
+
+  it("複数シートを作成できる", async () => {
+    const sheets = [
+      { name: "Sheet1", headers: ["A"], data: [{ A: 1 }] },
+      { name: "Sheet2", headers: ["B", "C"], data: [{ B: "x", C: "y" }] },
+    ];
+
+    const buffer = await buildXlsxBuffer(sheets);
+    const parsed = await parseXlsxBuffer(buffer);
+
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0].name).toBe("Sheet1");
+    expect(parsed[1].name).toBe("Sheet2");
+    expect(parsed[1].data).toEqual([{ B: "x", C: "y" }]);
+  });
+
+  it("空データでもヘッダーのみのシートを作成できる", async () => {
+    const sheets = [{ name: "Empty", headers: ["名前", "値"], data: [] }];
+
+    const buffer = await buildXlsxBuffer(sheets);
+    const parsed = await parseXlsxBuffer(buffer);
+
+    expect(parsed[0].headers).toEqual(["名前", "値"]);
+    expect(parsed[0].rowCount).toBe(0);
+    expect(parsed[0].data).toEqual([]);
   });
 });
