@@ -28,14 +28,6 @@ export const filesRoute = new Hono<Env>()
             },
           },
         },
-        401: {
-          description: "未認証",
-          content: {
-            "application/json": {
-              schema: resolver(ErrorSchema),
-            },
-          },
-        },
       },
     }),
     requireAuth,
@@ -59,14 +51,6 @@ export const filesRoute = new Hono<Env>()
           content: {
             "application/json": {
               schema: resolver(z.object({ success: z.literal(true) })),
-            },
-          },
-        },
-        401: {
-          description: "未認証",
-          content: {
-            "application/json": {
-              schema: resolver(ErrorSchema),
             },
           },
         },

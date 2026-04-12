@@ -3,8 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  type File as ApiFile,
-  type GetApiFiles200,
   getApiFilesByObjectKeyDownload,
   getGetApiFilesQueryKey,
   useDeleteApiFilesByObjectKey,
@@ -33,7 +31,7 @@ function formatFileSize(bytes: number): string {
 
 function FilesPage() {
   const { data: response } = useGetApiFilesSuspense();
-  const files = (response.data as GetApiFiles200).files as ApiFile[];
+  const files = response.data.files;
 
   const queryClient = useQueryClient();
   const deleteMutation = useDeleteApiFilesByObjectKey();

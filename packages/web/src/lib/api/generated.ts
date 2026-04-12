@@ -249,6 +249,7 @@ export const PostApiAgentRuns200Workflow = {
   xlsxParse: "xlsxParse",
   pdfParse: "pdfParse",
   xlsxCreate: "xlsxCreate",
+  chartCreate: "chartCreate",
 } as const;
 
 export type PostApiAgentRuns200Result =
@@ -288,6 +289,11 @@ export type PostApiAgentRuns200Result =
       kind: "xlsxCreate";
       objectKey: string;
       downloadUrl: string;
+    }
+  | {
+      kind: "chartCreate";
+      objectKey: string;
+      downloadUrl: string;
     };
 
 export type PostApiAgentRuns200TraceToolsItemToolName =
@@ -299,6 +305,7 @@ export const PostApiAgentRuns200TraceToolsItemToolName = {
   parseXlsx: "parseXlsx",
   parsePdf: "parsePdf",
   createXlsx: "createXlsx",
+  createChart: "createChart",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItemWorkflow =
@@ -310,6 +317,7 @@ export const PostApiAgentRuns200TraceToolsItemWorkflow = {
   xlsxParse: "xlsxParse",
   pdfParse: "pdfParse",
   xlsxCreate: "xlsxCreate",
+  chartCreate: "chartCreate",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItem = {
@@ -1741,19 +1749,11 @@ export type getApiFilesResponse200 = {
   status: 200;
 };
 
-export type getApiFilesResponse401 = {
-  data: Error;
-  status: 401;
-};
-
 export type getApiFilesResponseSuccess = getApiFilesResponse200 & {
   headers: Headers;
 };
-export type getApiFilesResponseError = getApiFilesResponse401 & {
-  headers: Headers;
-};
 
-export type getApiFilesResponse = getApiFilesResponseSuccess | getApiFilesResponseError;
+export type getApiFilesResponse = getApiFilesResponseSuccess;
 
 export const getGetApiFilesUrl = () => {
   return `/api/files`;
@@ -1777,7 +1777,7 @@ export const getGetApiFilesQueryKey = () => {
 
 export const getGetApiFilesQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>>;
   fetch?: RequestInit;
@@ -1797,9 +1797,9 @@ export const getGetApiFilesQueryOptions = <
 };
 
 export type GetApiFilesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiFiles>>>;
-export type GetApiFilesQueryError = Error;
+export type GetApiFilesQueryError = unknown;
 
-export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = Error>(
+export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = unknown>(
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>> &
       Pick<
@@ -1814,7 +1814,7 @@ export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, 
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = Error>(
+export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>> &
       Pick<
@@ -1829,7 +1829,7 @@ export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, 
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = Error>(
+export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>>;
     fetch?: RequestInit;
@@ -1837,7 +1837,7 @@ export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, 
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = Error>(
+export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>>;
     fetch?: RequestInit;
@@ -1855,7 +1855,7 @@ export function useGetApiFiles<TData = Awaited<ReturnType<typeof getApiFiles>>, 
 
 export const getGetApiFilesSuspenseQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(options?: {
   query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>>;
   fetch?: RequestInit;
@@ -1875,11 +1875,11 @@ export const getGetApiFilesSuspenseQueryOptions = <
 };
 
 export type GetApiFilesSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getApiFiles>>>;
-export type GetApiFilesSuspenseQueryError = Error;
+export type GetApiFilesSuspenseQueryError = unknown;
 
 export function useGetApiFilesSuspense<
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(
   options: {
     query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiFiles>>, TError, TData>>;
@@ -1889,7 +1889,7 @@ export function useGetApiFilesSuspense<
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiFilesSuspense<
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(
   options?: {
     query?: Partial<
@@ -1901,7 +1901,7 @@ export function useGetApiFilesSuspense<
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiFilesSuspense<
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(
   options?: {
     query?: Partial<
@@ -1914,7 +1914,7 @@ export function useGetApiFilesSuspense<
 
 export function useGetApiFilesSuspense<
   TData = Awaited<ReturnType<typeof getApiFiles>>,
-  TError = Error,
+  TError = unknown,
 >(
   options?: {
     query?: Partial<
@@ -1939,11 +1939,6 @@ export type deleteApiFilesByObjectKeyResponse200 = {
   status: 200;
 };
 
-export type deleteApiFilesByObjectKeyResponse401 = {
-  data: Error;
-  status: 401;
-};
-
 export type deleteApiFilesByObjectKeyResponse404 = {
   data: Error;
   status: 404;
@@ -1952,10 +1947,7 @@ export type deleteApiFilesByObjectKeyResponse404 = {
 export type deleteApiFilesByObjectKeyResponseSuccess = deleteApiFilesByObjectKeyResponse200 & {
   headers: Headers;
 };
-export type deleteApiFilesByObjectKeyResponseError = (
-  | deleteApiFilesByObjectKeyResponse401
-  | deleteApiFilesByObjectKeyResponse404
-) & {
+export type deleteApiFilesByObjectKeyResponseError = deleteApiFilesByObjectKeyResponse404 & {
   headers: Headers;
 };
 
