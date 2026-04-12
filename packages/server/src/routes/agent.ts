@@ -8,7 +8,6 @@ import {
 } from "@dx-template/agent";
 import { Hono } from "hono";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import type { WorkflowContext } from "@dx-template/workflow";
 import { z } from "zod";
 import type { Env } from "../lib/context.js";
 import { AppError } from "../lib/errors.js";
@@ -22,12 +21,7 @@ import {
 } from "../repositories/agent-conversations.js";
 import { AgentConversationSchema, AgentConversationSummarySchema } from "../schemas/agent.js";
 import { ErrorSchema } from "../schemas/error.js";
-
-function createWorkflowContext(): WorkflowContext {
-  return {
-    queries: {},
-  };
-}
+import { createWorkflowContext } from "../lib/workflow-context-factory.js";
 
 export const agentRoute = new Hono<Env>()
   .get(
@@ -212,7 +206,6 @@ export const agentRoute = new Hono<Env>()
     async (c) => {
       const input = c.req.valid("json");
       const user = c.get("user")!;
-      const context = createWorkflowContext();
       const conversationId = input.conversationId ?? crypto.randomUUID();
       const conversation = await ensureConversation(c.var.db, {
         conversationId,
@@ -225,6 +218,7 @@ export const agentRoute = new Hono<Env>()
       }
 
       try {
+        const context = createWorkflowContext();
         return await streamAgentChat(
           {
             conversationId,

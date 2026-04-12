@@ -65,11 +65,12 @@ tasks:
     cmds:
       - pnpm -r test
 
-  api:generate:
-    desc: OpenAPI と web API クライアントを生成
+  gen:
+    desc: OpenAPI スキーマ + クライアント型を一括生成
     cmds:
       - task: server:generate:openapi
       - task: web:generate:api
+      - task: bot:generate:api
 
   setup:
     desc: 初期セットアップ
@@ -78,25 +79,6 @@ tasks:
       - cp -n .env.local.example .env.local
       - lefthook install
 
-  migrate:generate:
-    desc: マイグレーションSQL生成
-    cmds:
-      - task: server:migrate:generate
-
-  migrate:up:
-    desc: マイグレーション実行
-    cmds:
-      - task: server:migrate:up
-
-  migrate:push:
-    desc: スキーマ直接反映（開発用）
-    cmds:
-      - task: server:migrate:push
-
-  migrate:studio:
-    desc: Drizzle Studio 起動
-    cmds:
-      - task: server:migrate:studio
 
   docker:build:bot:
     desc: slack-bot Docker イメージビルド

@@ -214,7 +214,7 @@ describe("POST /api/agent/runs", () => {
         },
         source: "web",
       },
-      { queries: {} },
+      expect.objectContaining({ queries: expect.any(Object) }),
     );
   });
 
@@ -317,7 +317,7 @@ describe("POST /api/agent/chat", () => {
         },
         source: "web",
       },
-      { queries: {} },
+      expect.objectContaining({ queries: expect.any(Object) }),
       {
         onFinish: expect.any(Function),
       },

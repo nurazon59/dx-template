@@ -2,8 +2,9 @@ import { tool } from "ai";
 import { z } from "zod";
 import {
   type ReportDraftWorkflowPayload,
-  type WorkflowContext,
-  workflowRegistry,
+  type ReportDraftWorkflowResult,
+  dispatch,
+  jobStore,
 } from "@dx-template/workflow";
 import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
 
@@ -15,10 +16,11 @@ export const ReportDraftToolInputSchema = z.object({
   audience: z.string().default("事業企画部"),
 });
 
-export const reportDraftTool = (
-  context: WorkflowContext,
-  state: { message: string; setWorkflow: SetWorkflow; toolTrace: AgentToolTrace[] },
-) =>
+export const reportDraftTool = (state: {
+  message: string;
+  setWorkflow: SetWorkflow;
+  toolTrace: AgentToolTrace[];
+}) =>
   tool({
     description:
       "レポート作成やレポート草案の依頼に対して、transport 非依存の report draft を作る。",
@@ -30,7 +32,9 @@ export const reportDraftTool = (
         summary,
         audience,
       };
-      const result = await workflowRegistry.reportDraft.run(payload, context);
+      const { jobId } = await dispatch("report", payload);
+      const job = jobStore.get(jobId);
+      const result = job?.result as ReportDraftWorkflowResult;
       state.setWorkflow("reportDraft", result);
       state.toolTrace.push({
         toolName: "createReportDraft",

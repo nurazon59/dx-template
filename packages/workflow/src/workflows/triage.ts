@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { Workflow, WorkflowContext } from "./types.js";
+import type { StepEntry, Workflow } from "../types.js";
+import { createRunner } from "../runner.js";
 
 export const TriageIntentSchema = z.enum(["report", "approval", "general", "unknown"]);
 export type TriageIntent = z.infer<typeof TriageIntentSchema>;
@@ -32,13 +33,21 @@ function nextActionFor(intent: TriageIntent): string {
   }
 }
 
-export const triageWorkflow: Workflow<TriageWorkflowPayload, TriageWorkflowResult> = {
-  async run(payload: TriageWorkflowPayload, _context: WorkflowContext) {
-    return {
-      kind: "triage",
-      intent: payload.intent,
-      summary: payload.summary,
-      nextAction: nextActionFor(payload.intent),
-    };
+const steps: StepEntry[] = [
+  {
+    name: "classify",
+    execute: async (payload: unknown) => {
+      const p = payload as TriageWorkflowPayload;
+      return {
+        kind: "triage" as const,
+        intent: p.intent,
+        summary: p.summary,
+        nextAction: nextActionFor(p.intent),
+      };
+    },
   },
+];
+
+export const triageWorkflow: Workflow<TriageWorkflowPayload, TriageWorkflowResult> = {
+  run: createRunner<TriageWorkflowPayload, TriageWorkflowResult>(steps),
 };

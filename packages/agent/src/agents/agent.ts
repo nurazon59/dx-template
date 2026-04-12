@@ -10,6 +10,7 @@ import {
 import { buildAgentSystemPrompt } from "../prompts/agent.js";
 import { triageTool } from "../tools/triage.js";
 import { reportDraftTool } from "../tools/report-draft.js";
+import { xlsxParseTool } from "../tools/xlsx-parse.js";
 import type {
   AgentChatInput,
   AgentRunInput,
@@ -94,12 +95,17 @@ function createTools(
   },
 ) {
   return {
-    runTriage: triageTool(context, {
+    runTriage: triageTool({
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    createReportDraft: reportDraftTool(context, {
+    createReportDraft: reportDraftTool({
+      message: state.message,
+      setWorkflow: state.setWorkflow,
+      toolTrace: state.toolTrace,
+    }),
+    parseXlsx: xlsxParseTool(context, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,

@@ -1,14 +1,17 @@
 import {
   type ReportDraftWorkflowPayload,
+  type ReportDraftWorkflowResult,
   type TriageWorkflowPayload,
+  type TriageWorkflowResult,
   type WorkflowContext,
-  workflowRegistry,
+  dispatch,
+  jobStore,
 } from "@dx-template/workflow";
 import type { AgentRunInput, AgentRunResult, AgentToolTrace } from "../types.js";
 
 export async function runMockAgent(
   input: AgentRunInput,
-  context: WorkflowContext,
+  _context: WorkflowContext,
   runId: string,
 ): Promise<AgentRunResult> {
   const toolTrace: AgentToolTrace[] = [];
@@ -19,7 +22,8 @@ export async function runMockAgent(
     intent,
     summary: input.message,
   };
-  const triageResult = await workflowRegistry.triage.run(triagePayload, context);
+  const { jobId: triageJobId } = await dispatch("triage", triagePayload);
+  const triageResult = jobStore.get(triageJobId)?.result as TriageWorkflowResult;
   toolTrace.push({
     toolName: "runTriage",
     workflow: "triage",
@@ -43,7 +47,8 @@ export async function runMockAgent(
     summary: input.message,
     audience: "事業企画部",
   };
-  const reportDraftResult = await workflowRegistry.reportDraft.run(reportDraftPayload, context);
+  const { jobId: reportJobId } = await dispatch("report", reportDraftPayload);
+  const reportDraftResult = jobStore.get(reportJobId)?.result as ReportDraftWorkflowResult;
   toolTrace.push({
     toolName: "createReportDraft",
     workflow: "reportDraft",
