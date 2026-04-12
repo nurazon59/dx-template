@@ -3,7 +3,9 @@ import type { WorkflowContext } from "../types.js";
 import { dispatch, jobStore } from "../registry.js";
 
 describe("xlsxParseWorkflow", () => {
-  function createMockContext(sheets = [{ name: "Sheet1", headers: ["A"], rowCount: 1, data: [{ A: 1 }] }]): WorkflowContext {
+  function createMockContext(
+    sheets = [{ name: "Sheet1", headers: ["A"], rowCount: 1, data: [{ A: 1 }] }],
+  ): WorkflowContext {
     return {
       queries: {
         fetchFileBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
@@ -44,8 +46,8 @@ describe("xlsxParseWorkflow", () => {
     const context: WorkflowContext = {
       queries: { fetchFileBuffer: vi.fn().mockResolvedValue(new Uint8Array()) },
     };
-    await expect(
-      dispatch("xlsxParse", { objectKey: "test.xlsx" }, context),
-    ).rejects.toThrow("parseXlsx is not configured");
+    await expect(dispatch("xlsxParse", { objectKey: "test.xlsx" }, context)).rejects.toThrow(
+      "parseXlsx is not configured",
+    );
   });
 });

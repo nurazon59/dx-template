@@ -20,7 +20,14 @@ async function createTestXlsx(
 describe("parseXlsxBuffer", () => {
   it("単一シートのヘッダーとデータを正しくパースする", async () => {
     const buffer = await createTestXlsx([
-      { name: "Sheet1", headers: ["名前", "年齢"], rows: [["田中", 30], ["鈴木", 25]] },
+      {
+        name: "Sheet1",
+        headers: ["名前", "年齢"],
+        rows: [
+          ["田中", 30],
+          ["鈴木", 25],
+        ],
+      },
     ]);
 
     const result = await parseXlsxBuffer(buffer);
@@ -30,8 +37,8 @@ describe("parseXlsxBuffer", () => {
     expect(result[0].headers).toEqual(["名前", "年齢"]);
     expect(result[0].rowCount).toBe(2);
     expect(result[0].data).toEqual([
-      { "名前": "田中", "年齢": 30 },
-      { "名前": "鈴木", "年齢": 25 },
+      { 名前: "田中", 年齢: 30 },
+      { 名前: "鈴木", 年齢: 25 },
     ]);
   });
 
@@ -45,7 +52,7 @@ describe("parseXlsxBuffer", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("経費");
-    expect(result[0].data).toEqual([{ "項目": "交通費", "金額": 50 }]);
+    expect(result[0].data).toEqual([{ 項目: "交通費", 金額: 50 }]);
   });
 
   it("headerRow オプションでヘッダー行を指定できる", async () => {
@@ -60,7 +67,7 @@ describe("parseXlsxBuffer", () => {
     const result = await parseXlsxBuffer(buffer, { headerRow: 2 });
 
     expect(result[0].headers).toEqual(["名前", "値"]);
-    expect(result[0].data).toEqual([{ "名前": "A", "値": 1 }]);
+    expect(result[0].data).toEqual([{ 名前: "A", 値: 1 }]);
   });
 
   it("空行をスキップする", async () => {
@@ -76,6 +83,6 @@ describe("parseXlsxBuffer", () => {
     const result = await parseXlsxBuffer(buffer);
 
     expect(result[0].rowCount).toBe(2);
-    expect(result[0].data).toEqual([{ "名前": "田中" }, { "名前": "鈴木" }]);
+    expect(result[0].data).toEqual([{ 名前: "田中" }, { 名前: "鈴木" }]);
   });
 });

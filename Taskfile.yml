@@ -66,11 +66,17 @@ tasks:
       - pnpm -r test
 
   gen:
-    desc: OpenAPI スキーマ + クライアント型を一括生成
+    desc: マイグレーション + OpenAPI スキーマ + クライアント型を一括生成
     cmds:
+      - task: server:migrate:generate
       - task: server:generate:openapi
       - task: web:generate:api
       - task: bot:generate:api
+
+  migrate:
+    desc: マイグレーション実行
+    cmds:
+      - task: server:migrate:up
 
   setup:
     desc: 初期セットアップ

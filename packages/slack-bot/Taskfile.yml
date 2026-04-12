@@ -35,3 +35,8 @@ tasks:
     desc: vitest ウォッチモード
     cmds:
       - pnpm test:watch
+
+  generate:api:
+    desc: openapi-typescript でスキーマ生成
+    cmds:
+      - pnpm generate:api

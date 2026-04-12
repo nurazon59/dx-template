@@ -40,17 +40,17 @@ describe("pdfParseWorkflow", () => {
   });
 
   it("fetchFileBuffer 未設定時にエラーを投げる", async () => {
-    await expect(
-      dispatch("pdfParse", { objectKey: "test.pdf" }, { queries: {} }),
-    ).rejects.toThrow("fetchFileBuffer is not configured");
+    await expect(dispatch("pdfParse", { objectKey: "test.pdf" }, { queries: {} })).rejects.toThrow(
+      "fetchFileBuffer is not configured",
+    );
   });
 
   it("parsePdf 未設定時にエラーを投げる", async () => {
     const context: WorkflowContext = {
       queries: { fetchFileBuffer: vi.fn().mockResolvedValue(new Uint8Array()) },
     };
-    await expect(
-      dispatch("pdfParse", { objectKey: "test.pdf" }, context),
-    ).rejects.toThrow("parsePdf is not configured");
+    await expect(dispatch("pdfParse", { objectKey: "test.pdf" }, context)).rejects.toThrow(
+      "parsePdf is not configured",
+    );
   });
 });
