@@ -9,7 +9,6 @@ providers/   # LLM provider 切替（OpenAI, Google）
 prompts/     # システムプロンプト定義
 tools/       # Agent が呼び出すツール（triage, report-draft）
 agents/      # agent 本体（agent.ts）+ mock 実装（mock.ts）
-hooks/       # React hooks（useAgentSearchParams — nuqs ベースのクエリパラメータ管理）
 types.ts     # Zod スキーマ（AgentRunInput, AgentChatInput, AgentRunResult 等）
 ```
 
