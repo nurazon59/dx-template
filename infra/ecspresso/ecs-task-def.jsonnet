@@ -11,6 +11,12 @@
       name: 'app',
       image: '{{ must_env `AWS_ACCOUNT_ID` }}.dkr.ecr.ap-northeast-1.amazonaws.com/slack-bot-template:{{ env `IMAGE_TAG` `latest` }}',
       essential: true,
+      environment: [
+        {
+          name: 'SERVER_URL',
+          value: 'http://{{ tfstate `aws_lb.server.dns_name` }}',
+        },
+      ],
       secrets: [
         {
           name: 'SLACK_BOT_TOKEN',

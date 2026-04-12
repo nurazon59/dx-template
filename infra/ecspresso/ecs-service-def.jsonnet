@@ -7,7 +7,7 @@
     maximumPercent: 200,
     minimumHealthyPercent: 100,
   },
-  desiredCount: 0,
+  desiredCount: 1,
   enableECSManagedTags: true,
   launchType: 'FARGATE',
   networkConfiguration: {

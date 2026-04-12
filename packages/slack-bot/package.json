@@ -7,6 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "dev:local": "tsx watch src/dev-server.ts",
     "build": "tsc",
+    "generate:api": "openapi-typescript ../server/openapi.json -o src/lib/api/schema.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -14,11 +15,13 @@
   },
   "dependencies": {
     "@slack/bolt": "^4.3.0",
+    "openapi-fetch": "^0.17.0",
     "slack-block-builder": "^2.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
     "msw": "^2.13.2",
+    "openapi-typescript": "^7.13.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^4.1.4"

@@ -4,6 +4,9 @@ import { setupServer } from "msw/node";
 import { apiClient, ApiError } from "./api-client.js";
 
 const server = setupServer(
+  http.get("http://localhost:3000/api/time", () =>
+    HttpResponse.json({ timestamp: "2026-04-12T09:00:00.000Z" }),
+  ),
   http.get("http://localhost:3000/api/users", () =>
     HttpResponse.json({ users: [{ id: "1", slackUserId: "U1", displayName: "Test" }] }),
   ),
@@ -27,6 +30,11 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("apiClient", () => {
+  it("system.time は timestamp を返す", async () => {
+    const result = await apiClient.system.time();
+    expect(result.timestamp).toBe("2026-04-12T09:00:00.000Z");
+  });
+
   it("users.list はユーザー一覧を返す", async () => {
     const result = await apiClient.users.list();
     expect(result.users).toHaveLength(1);

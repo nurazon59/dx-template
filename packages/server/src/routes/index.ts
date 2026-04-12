@@ -28,6 +28,23 @@ const app = new Hono<Env>()
     (c) => c.json({ status: "ok" as const }),
   )
   .get(
+    "/time",
+    describeRoute({
+      tags: ["System"],
+      responses: {
+        200: {
+          description: "現在時刻",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ timestamp: z.string().datetime() })),
+            },
+          },
+        },
+      },
+    }),
+    (c) => c.json({ timestamp: new Date().toISOString() }),
+  )
+  .get(
     "/me",
     describeRoute({
       tags: ["Auth"],

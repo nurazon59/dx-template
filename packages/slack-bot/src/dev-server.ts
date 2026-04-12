@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { ping } from "./listeners/commands/ping.js";
+import { appHomeOpened } from "./listeners/events/app-home.js";
 import { appMention } from "./listeners/events/app-mention.js";
 import { buttonClick } from "./listeners/actions/button-click.js";
 
@@ -19,7 +20,14 @@ function createHarness() {
   const say = async (msg: unknown) => {
     captured.responses.push(msg);
   };
-  return { captured, ack, respond, say };
+  const client = {
+    views: {
+      publish: async (msg: unknown) => {
+        captured.responses.push(msg);
+      },
+    },
+  };
+  return { captured, ack, respond, say, client };
 }
 
 const commands: Record<string, (args: any) => Promise<void>> = {
@@ -27,6 +35,8 @@ const commands: Record<string, (args: any) => Promise<void>> = {
 };
 
 const events: Record<string, (args: any) => Promise<void>> = {
+  app_home_opened: appHomeOpened,
+  "app-home-opened": appHomeOpened,
   "app-mention": appMention,
 };
 
@@ -78,13 +88,13 @@ const server = createServer(async (req, res) => {
   }
 
   const body = await parseBody(req);
-  const { captured, ack, respond, say } = createHarness();
+  const { captured, ack, respond, say, client } = createHarness();
 
   if (category === "commands") {
     await handler({ ack, respond, command: { text: "", ...body } });
     json(res, 200, { ack: captured.ack, responses: captured.responses });
   } else if (category === "events") {
-    await handler({ event: { user: "U_LOCAL", ...body }, say });
+    await handler({ event: { user: "U_LOCAL", ...body }, say, client });
     json(res, 200, { responses: captured.responses });
   } else {
     await handler({ ack, respond, body: { ...body } });

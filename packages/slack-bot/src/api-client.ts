@@ -1,20 +1,32 @@
+import createClient from "openapi-fetch";
+import type { components, paths } from "./lib/api/schema.js";
+
 const baseUrl = process.env["SERVER_URL"] ?? "http://localhost:3000";
+const client = createClient<paths>({
+  baseUrl,
+  fetch: (request) => globalThis.fetch(request),
+});
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${baseUrl}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+type ApiErrorBody = components["schemas"]["Error"];
+export type User = components["schemas"]["User"];
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.code ?? "UNKNOWN", body?.message ?? res.statusText);
+function isApiErrorBody(body: unknown): body is ApiErrorBody {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    typeof body.code === "string" &&
+    "message" in body &&
+    typeof body.message === "string"
+  );
+}
+
+function toApiError(error: unknown, response: Response): ApiError {
+  if (isApiErrorBody(error)) {
+    return new ApiError(response.status, error.code, error.message);
   }
 
-  return res.json() as Promise<T>;
+  return new ApiError(response.status, "UNKNOWN", response.statusText);
 }
 
 export class ApiError extends Error {
@@ -28,23 +40,45 @@ export class ApiError extends Error {
   }
 }
 
-export interface User {
-  id: string;
-  slackUserId: string;
-  displayName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export const apiClient = {
+  system: {
+    time: async () => {
+      const { data, error, response } = await client.GET("/api/time");
+      if (error) {
+        throw toApiError(error, response);
+      }
+
+      return data;
+    },
+  },
   users: {
-    list: () => request<{ users: User[] }>("/api/users"),
-    create: (input: { slackUserId: string; displayName: string }) =>
-      request<{ user: User }>("/api/users", {
-        method: "POST",
-        body: JSON.stringify(input),
-      }),
-    getBySlackUserId: (slackUserId: string) =>
-      request<{ user: User }>(`/api/users/${encodeURIComponent(slackUserId)}`),
+    list: async () => {
+      const { data, error, response } = await client.GET("/api/users");
+      if (error) {
+        throw toApiError(error, response);
+      }
+
+      return data;
+    },
+    create: async (input: components["schemas"]["CreateUserInput"]) => {
+      const { data, error, response } = await client.POST("/api/users", {
+        body: input,
+      });
+      if (error) {
+        throw toApiError(error, response);
+      }
+
+      return data;
+    },
+    getBySlackUserId: async (slackUserId: string) => {
+      const { data, error, response } = await client.GET("/api/users/{slackUserId}", {
+        params: { path: { slackUserId } },
+      });
+      if (error) {
+        throw toApiError(error, response);
+      }
+
+      return data;
+    },
   },
 };

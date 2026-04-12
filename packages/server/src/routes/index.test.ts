@@ -12,3 +12,13 @@ describe("GET /api/health", () => {
     expect(await res.json()).toEqual({ status: "ok" });
   });
 });
+
+describe("GET /api/time", () => {
+  it("timestamp を ISO 文字列で返す", async () => {
+    const res = await app.request("/api/time");
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { timestamp: string };
+    expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
+  });
+});
