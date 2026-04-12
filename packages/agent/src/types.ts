@@ -51,7 +51,14 @@ export const AgentWorkflowResultSchema = z.union([
 export type AgentWorkflowResult = z.infer<typeof AgentWorkflowResultSchema>;
 
 export const AgentToolTraceSchema = z.object({
-  toolName: z.enum(["runTriage", "createReportDraft", "parseXlsx", "parsePdf", "createXlsx", "createChart"]),
+  toolName: z.enum([
+    "runTriage",
+    "createReportDraft",
+    "parseXlsx",
+    "parsePdf",
+    "createXlsx",
+    "createChart",
+  ]),
   workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse", "xlsxCreate", "chartCreate"]),
   input: z.unknown(),
   output: z.unknown(),
