@@ -1,0 +1,39 @@
+import { z } from "zod";
+import { ReportDraftWorkflowResultSchema, TriageWorkflowResultSchema } from "@dx-template/workflow";
+
+export const AgentRunInputSchema = z.object({
+  message: z.string().min(1),
+  actor: z
+    .object({
+      userId: z.string().optional(),
+      slackUserId: z.string().optional(),
+    })
+    .optional(),
+  source: z.enum(["web", "slack"]),
+});
+export type AgentRunInput = z.infer<typeof AgentRunInputSchema>;
+
+export const AgentWorkflowResultSchema = z.union([
+  TriageWorkflowResultSchema,
+  ReportDraftWorkflowResultSchema,
+]);
+export type AgentWorkflowResult = z.infer<typeof AgentWorkflowResultSchema>;
+
+export const AgentToolTraceSchema = z.object({
+  toolName: z.enum(["runTriage", "createReportDraft"]),
+  workflow: z.enum(["triage", "reportDraft"]),
+  input: z.unknown(),
+  output: z.unknown(),
+});
+export type AgentToolTrace = z.infer<typeof AgentToolTraceSchema>;
+
+export const AgentRunResultSchema = z.object({
+  runId: z.string(),
+  workflow: z.enum(["triage", "reportDraft"]),
+  message: z.string(),
+  result: AgentWorkflowResultSchema,
+  trace: z.object({
+    tools: z.array(AgentToolTraceSchema),
+  }),
+});
+export type AgentRunResult = z.infer<typeof AgentRunResultSchema>;
