@@ -11,5 +11,8 @@ export default defineConfig({
   test: {
     globals: true,
     passWithNoTests: true,
+    env: {
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+    },
   },
 });
