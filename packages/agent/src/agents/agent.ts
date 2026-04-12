@@ -13,6 +13,7 @@ import { reportDraftTool } from "../tools/report-draft.js";
 import { xlsxParseTool } from "../tools/xlsx-parse.js";
 import { pdfParseTool } from "../tools/pdf-parse.js";
 import { xlsxCreateTool } from "../tools/xlsx-create.js";
+import { chartCreateTool } from "../tools/chart-create.js";
 import type {
   AgentChatInput,
   AgentRunInput,
@@ -118,6 +119,11 @@ function createTools(
       toolTrace: state.toolTrace,
     }),
     createXlsx: xlsxCreateTool(context, {
+      message: state.message,
+      setWorkflow: state.setWorkflow,
+      toolTrace: state.toolTrace,
+    }),
+    createChart: chartCreateTool(context, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,

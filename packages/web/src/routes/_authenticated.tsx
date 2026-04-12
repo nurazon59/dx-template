@@ -28,6 +28,9 @@ function AuthenticatedLayout() {
             <Link to="/agents" style={{ fontSize: "0.875rem" }}>
               Agents
             </Link>
+            <Link to="/files" style={{ fontSize: "0.875rem" }}>
+              ファイル
+            </Link>
             <Link to="/users" style={{ fontSize: "0.875rem" }}>
               ユーザー
             </Link>

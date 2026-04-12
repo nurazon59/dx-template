@@ -4,6 +4,7 @@ import type {
   XlsxCreateSheetInput,
   PdfParseOptions,
   PdfPage,
+  ChartCreateInput,
 } from "@dx-template/shared";
 
 export interface WorkflowContext {
@@ -17,6 +18,7 @@ export interface WorkflowContext {
     parseXlsx?: (buffer: Uint8Array, options?: XlsxParseOptions) => Promise<XlsxSheet[]>;
     buildXlsx?: (sheets: XlsxCreateSheetInput[]) => Promise<Uint8Array>;
     parsePdf?: (buffer: Uint8Array, options?: PdfParseOptions) => Promise<PdfPage[]>;
+    buildChart?: (input: ChartCreateInput) => Promise<Uint8Array>;
   };
 }
 

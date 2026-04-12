@@ -17,6 +17,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.65",
+    "chart.js": "^4.4.9",
     "exceljs": "^4.4.0",
     "unpdf": "^1.4.0",
     "zod": "^4.3.6"

@@ -5,6 +5,7 @@ import { reportWorkflow } from "./workflows/report.js";
 import { xlsxParseWorkflow } from "./workflows/xlsx-parse.js";
 import { xlsxCreateWorkflow } from "./workflows/xlsx-create.js";
 import { pdfParseWorkflow } from "./workflows/pdf-parse.js";
+import { chartCreateWorkflow } from "./workflows/chart-create.js";
 
 export { jobStore };
 
@@ -14,6 +15,7 @@ export const workflowRegistry = {
   xlsxParse: xlsxParseWorkflow,
   xlsxCreate: xlsxCreateWorkflow,
   pdfParse: pdfParseWorkflow,
+  chartCreate: chartCreateWorkflow,
 };
 
 export type WorkflowType = keyof typeof workflowRegistry;

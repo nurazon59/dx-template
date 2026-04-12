@@ -16,8 +16,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { z } from "zod/v4";
 import { ChatMessageBubble } from "./ChatMessageBubble";
+import { FileLibrarySelect } from "./FileLibrarySelect";
 import { FilePreviewList } from "./FilePreviewList";
 import { useFileUpload, buildMessageWithFiles } from "../hooks/useFileUpload";
 
@@ -85,6 +87,8 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
     openFilePicker,
   } = useFileUpload();
 
+  const [libraryFiles, setLibraryFiles] = useState<{ fileName: string; objectKey: string }[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -100,9 +104,9 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
 
     let messageText = data.message;
 
-    if (selectedFiles.length > 0) {
-      const uploaded = await uploadAll();
-      messageText = buildMessageWithFiles(data.message, uploaded);
+    const allFiles = [...libraryFiles, ...(selectedFiles.length > 0 ? await uploadAll() : [])];
+    if (allFiles.length > 0) {
+      messageText = buildMessageWithFiles(data.message, allFiles);
     }
 
     await sendMessage(
@@ -116,6 +120,7 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
     );
     reset({ message: "" });
     resetFiles();
+    setLibraryFiles([]);
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -185,18 +190,29 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
             }}
           />
           <FilePreviewList files={selectedFiles} uploading={uploading} onRemove={removeFile} />
+          {libraryFiles.length > 0 && (
+            <HStack gap={2} flexWrap="wrap">
+              {libraryFiles.map((f) => (
+                <Box key={f.objectKey} px={2} py={1} bg="blue.50" borderRadius="md" fontSize="sm">
+                  📁 {f.fileName}
+                </Box>
+              ))}
+            </HStack>
+          )}
           <Field.Root invalid={!!errors.message}>
             <HStack align="flex-start" gap={2}>
-              <IconButton
-                aria-label="ファイルを添付"
-                variant="ghost"
-                size="sm"
-                mt={2}
-                onClick={openFilePicker}
-                disabled={isSending || uploading}
-              >
-                📎
-              </IconButton>
+              <HStack gap={0} mt={2}>
+                <IconButton
+                  aria-label="ファイルを添付"
+                  variant="ghost"
+                  size="sm"
+                  onClick={openFilePicker}
+                  disabled={isSending || uploading}
+                >
+                  📎
+                </IconButton>
+                <FileLibrarySelect onSelect={setLibraryFiles} disabled={isSending || uploading} />
+              </HStack>
               <Box flex="1">
                 <Textarea
                   {...register("message")}

@@ -17,6 +17,17 @@ export const FileUploadUrlSchema = z
   })
   .meta({ ref: "FileUploadUrl" });
 
+export const FileSchema = z
+  .object({
+    id: z.string().uuid(),
+    objectKey: z.string(),
+    fileName: z.string(),
+    contentType: z.string(),
+    contentLength: z.number().int(),
+    createdAt: z.string().datetime(),
+  })
+  .meta({ ref: "File" });
+
 export const FileDownloadUrlSchema = z
   .object({
     downloadUrl: z.string().url(),

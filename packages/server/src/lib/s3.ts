@@ -1,4 +1,9 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
 import { AppError } from "./errors.js";
@@ -157,6 +162,15 @@ export async function createFileDownloadUrl(
   );
 
   return { downloadUrl, expiresIn: UPLOAD_URL_EXPIRES_IN_SECONDS };
+}
+
+export async function deleteFile(objectKey: string): Promise<void> {
+  const bucket = env.S3_UPLOAD_BUCKET ?? env.S3_BUCKET;
+  if (!bucket) {
+    throw new AppError("UPLOAD_STORAGE_NOT_CONFIGURED", "Upload storage is not configured", 500);
+  }
+
+  await s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 
 export async function putFileBuffer(

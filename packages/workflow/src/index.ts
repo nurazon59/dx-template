@@ -6,3 +6,4 @@ export * from "./workflows/report.js";
 export * from "./workflows/xlsx-parse.js";
 export * from "./workflows/xlsx-create.js";
 export * from "./workflows/pdf-parse.js";
+export * from "./workflows/chart-create.js";
