@@ -18,7 +18,7 @@ tasks:
   dev:
     desc: 全パッケージ並列起動（mprocs）
     cmds:
-      - mprocs "task bot:dev" "task server:dev" "task web:dev"
+      - mprocs
 
   dev:bot:
     desc: bot パッケージのみ起動

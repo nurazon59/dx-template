@@ -1,0 +1,19 @@
+procs:
+  server:
+    cmd: ["task", "server:dev"]
+    stop: "SIGKILL"
+  slack-bot:
+    cmd: ["task", "bot:dev"]
+    stop: "SIGKILL"
+  web:
+    cmd: ["task", "web:dev"]
+    stop: "SIGKILL"
+  kill-server:
+    shell: "lsof -i:3000 | grep 'node' | awk '{print $2}' | xargs kill -9"
+    autostart: false
+  kill-slack-bot:
+    shell: "lsof -i:4000 | grep 'node' | awk '{print $2}' | xargs kill -9"
+    autostart: false
+  kill-web:
+    shell: "lsof -i:5173 | grep 'node' | awk '{print $2}' | xargs kill -9"
+    autostart: false
