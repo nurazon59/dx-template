@@ -207,9 +207,20 @@ export type PostApiAgentChatBodyMessagesItem = {
   [key: string]: unknown;
 };
 
+export type PostApiAgentChatBodyProvider =
+  (typeof PostApiAgentChatBodyProvider)[keyof typeof PostApiAgentChatBodyProvider];
+
+export const PostApiAgentChatBodyProvider = {
+  openai: "openai",
+  google: "google",
+} as const;
+
 export type PostApiAgentChatBody = {
   /** @minItems 1 */
   messages: PostApiAgentChatBodyMessagesItem[];
+  provider?: PostApiAgentChatBodyProvider;
+  /** @minLength 1 */
+  model?: string;
 };
 
 export type PostApiUploadsImagesPresign201 = {

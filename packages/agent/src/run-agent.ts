@@ -8,6 +8,7 @@ import {
   tool,
   type UIMessage,
 } from "ai";
+import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@dx-template/workflow";
 import type {
   AgentChatInput,
+  AgentProvider,
   AgentRunInput,
   AgentRunResult,
   AgentToolTrace,
@@ -38,7 +40,12 @@ const ReportDraftToolInputSchema = z.object({
 
 export class AgentConfigurationError extends Error {
   constructor(
-    public readonly code: "OPENAI_MODEL_NOT_CONFIGURED" | "OPENAI_API_KEY_NOT_CONFIGURED",
+    public readonly code:
+      | "AI_MODEL_NOT_CONFIGURED"
+      | "GOOGLE_API_KEY_NOT_CONFIGURED"
+      | "OPENAI_API_KEY_NOT_CONFIGURED"
+      | "OPENAI_MODEL_NOT_CONFIGURED"
+      | "UNSUPPORTED_AI_PROVIDER",
     message: string,
   ) {
     super(message);
@@ -55,6 +62,11 @@ export interface StreamAgentChatInput extends AgentChatInput {
   source: AgentRunInput["source"];
 }
 
+interface AgentModelConfig {
+  model?: string;
+  provider?: AgentProvider;
+}
+
 const AGENT_SYSTEM_PROMPT = [
   "あなたは事業企画部向け工数削減ツールの Agent です。",
   "責務はユーザーの意図を理解し、適切な workflow 起動口を選ぶことだけです。",
@@ -67,15 +79,36 @@ function shouldCreateReportDraft(message: string): boolean {
   return /report|レポート|報告|草案/i.test(message);
 }
 
-function getConfiguredModel() {
-  const modelName = process.env["OPENAI_MODEL"];
+function getConfiguredModel(config: AgentModelConfig = {}) {
+  const provider = config.provider ?? process.env["AI_PROVIDER"] ?? "openai";
+  const modelName = config.model ?? process.env["AI_MODEL"] ?? process.env["OPENAI_MODEL"];
   if (!modelName) {
-    throw new AgentConfigurationError("OPENAI_MODEL_NOT_CONFIGURED", "OPENAI_MODEL is not set");
+    throw new AgentConfigurationError("AI_MODEL_NOT_CONFIGURED", "AI_MODEL is not set");
   }
-  if (!process.env["OPENAI_API_KEY"]) {
-    throw new AgentConfigurationError("OPENAI_API_KEY_NOT_CONFIGURED", "OPENAI_API_KEY is not set");
+
+  switch (provider) {
+    case "google":
+      if (!process.env["GOOGLE_GENERATIVE_AI_API_KEY"]) {
+        throw new AgentConfigurationError(
+          "GOOGLE_API_KEY_NOT_CONFIGURED",
+          "GOOGLE_GENERATIVE_AI_API_KEY is not set",
+        );
+      }
+      return google(modelName);
+    case "openai":
+      if (!process.env["OPENAI_API_KEY"]) {
+        throw new AgentConfigurationError(
+          "OPENAI_API_KEY_NOT_CONFIGURED",
+          "OPENAI_API_KEY is not set",
+        );
+      }
+      return openai(modelName);
+    default:
+      throw new AgentConfigurationError(
+        "UNSUPPORTED_AI_PROVIDER",
+        `Unsupported AI_PROVIDER: ${provider}`,
+      );
   }
-  return openai(modelName);
 }
 
 function createAgentTools(
@@ -285,7 +318,10 @@ export async function streamAgentChat(
 
   const toolTrace: AgentToolTrace[] = [];
   const result = streamText({
-    model: getConfiguredModel(),
+    model: getConfiguredModel({
+      model: input.model,
+      provider: input.provider,
+    }),
     system: [
       AGENT_SYSTEM_PROMPT,
       `source: ${input.source}`,

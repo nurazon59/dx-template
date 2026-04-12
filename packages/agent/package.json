@@ -18,6 +18,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.62",
     "@ai-sdk/openai": "^3.0.52",
     "@dx-template/workflow": "workspace:*",
     "ai": "^6.0.158",

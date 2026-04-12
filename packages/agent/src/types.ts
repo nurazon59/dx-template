@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { ReportDraftWorkflowResultSchema, TriageWorkflowResultSchema } from "@dx-template/workflow";
 
+export const AgentProviderSchema = z.enum(["openai", "google"]);
+export type AgentProvider = z.infer<typeof AgentProviderSchema>;
+
 export const AgentChatMessageSchema = z
   .object({
     id: z.string().optional(),
@@ -12,6 +15,8 @@ export type AgentChatMessage = z.infer<typeof AgentChatMessageSchema>;
 
 export const AgentChatInputSchema = z.object({
   messages: z.array(AgentChatMessageSchema).min(1),
+  provider: AgentProviderSchema.optional(),
+  model: z.string().min(1).optional(),
 });
 export type AgentChatInput = z.infer<typeof AgentChatInputSchema>;
 

@@ -21,6 +21,9 @@ vi.mock("ai", async () => {
         text: `report draft workflow を起動しました: ${reportDraftResult.title}`,
       };
     }),
+    streamText: vi.fn(() => ({
+      toUIMessageStreamResponse: vi.fn(() => new Response("stream")),
+    })),
   };
 });
 
@@ -28,10 +31,17 @@ vi.mock("@ai-sdk/openai", () => ({
   openai: vi.fn((model: string) => ({ model })),
 }));
 
-import { runAgent } from "./run-agent.js";
+vi.mock("@ai-sdk/google", () => ({
+  google: vi.fn((model: string) => ({ model })),
+}));
+
+import { runAgent, streamAgentChat } from "./run-agent.js";
 
 beforeEach(() => {
   delete process.env["AI_AGENT_MODE"];
+  delete process.env["AI_PROVIDER"];
+  delete process.env["AI_MODEL"];
+  delete process.env["GOOGLE_GENERATIVE_AI_API_KEY"];
   process.env["OPENAI_API_KEY"] = "test-api-key";
   process.env["OPENAI_MODEL"] = "test-model";
 });
@@ -158,5 +168,51 @@ describe("runAgent", () => {
         ],
       },
     });
+  });
+
+  it("AI_PROVIDER=google なら Gemini provider を使う", async () => {
+    process.env["AI_PROVIDER"] = "google";
+    process.env["AI_MODEL"] = "gemini-3-flash-preview";
+    process.env["GOOGLE_GENERATIVE_AI_API_KEY"] = "test-google-api-key";
+    delete process.env["OPENAI_API_KEY"];
+    delete process.env["OPENAI_MODEL"];
+
+    await runAgent(
+      {
+        message: "週次レポートを作って",
+        source: "web",
+      },
+      { queries: {} },
+      { runId: "run-google" },
+    );
+
+    const { google } = await import("@ai-sdk/google");
+    expect(google).toHaveBeenCalledWith("gemini-3-flash-preview");
+  });
+
+  it("chat input の provider/model で request 単位に切り替える", async () => {
+    process.env["OPENAI_API_KEY"] = "test-api-key";
+    process.env["OPENAI_MODEL"] = "gpt-5.4-mini";
+    process.env["GOOGLE_GENERATIVE_AI_API_KEY"] = "test-google-api-key";
+
+    const response = await streamAgentChat(
+      {
+        messages: [
+          {
+            id: "message-1",
+            role: "user",
+            parts: [{ type: "text", text: "週次レポートを作って" }],
+          },
+        ],
+        provider: "google",
+        model: "gemini-3-flash-preview",
+        source: "web",
+      },
+      { queries: {} },
+    );
+
+    const { google } = await import("@ai-sdk/google");
+    expect(response.status).toBe(200);
+    expect(google).toHaveBeenCalledWith("gemini-3-flash-preview");
   });
 });

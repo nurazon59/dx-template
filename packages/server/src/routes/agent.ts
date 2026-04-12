@@ -136,6 +136,8 @@ export const agentRoute = new Hono<Env>()
         return await streamAgentChat(
           {
             messages: input.messages,
+            model: input.model,
+            provider: input.provider,
             actor: {
               userId: user.id,
             },

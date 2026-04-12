@@ -172,7 +172,11 @@ describe("POST /api/agent/chat", () => {
     const res = await app.request("/api/agent/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({
+        messages,
+        provider: "google",
+        model: "gemini-3-flash-preview",
+      }),
     });
 
     expect(res.status).toBe(200);
@@ -180,6 +184,8 @@ describe("POST /api/agent/chat", () => {
     expect(mockStreamAgentChat).toHaveBeenCalledWith(
       {
         messages,
+        provider: "google",
+        model: "gemini-3-flash-preview",
         actor: {
           userId: "user-1",
         },

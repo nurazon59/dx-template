@@ -5,6 +5,8 @@ import {
   Container,
   HStack,
   Heading,
+  Input,
+  NativeSelect,
   Stack,
   Text,
   Textarea,
@@ -14,6 +16,13 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { authClient } from "../lib/auth";
+
+const defaultModels = {
+  openai: "gpt-5.4-mini",
+  google: "gemini-3-flash-preview",
+} as const;
+
+type AgentProvider = keyof typeof defaultModels;
 
 export const Route = createFileRoute("/agents")({
   beforeLoad: async () => {
@@ -28,6 +37,8 @@ export const Route = createFileRoute("/agents")({
 
 function AgentsPage() {
   const [input, setInput] = useState("");
+  const [provider, setProvider] = useState<AgentProvider>("openai");
+  const [model, setModel] = useState<string>(defaultModels.openai);
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/agent/chat",
@@ -43,7 +54,20 @@ function AgentsPage() {
     }
 
     setInput("");
-    await sendMessage({ text });
+    await sendMessage(
+      { text },
+      {
+        body: {
+          model: model.trim(),
+          provider,
+        },
+      },
+    );
+  };
+
+  const handleProviderChange = (nextProvider: AgentProvider) => {
+    setProvider(nextProvider);
+    setModel(defaultModels[nextProvider]);
   };
 
   return (
@@ -76,6 +100,35 @@ function AgentsPage() {
 
         <Box as="form" onSubmit={handleSubmit}>
           <Stack gap={3}>
+            <HStack align="flex-end" gap={3}>
+              <Box flex="0 0 160px">
+                <Text color="fg.muted" fontSize="sm" mb={1}>
+                  Provider
+                </Text>
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    value={provider}
+                    onChange={(event) =>
+                      handleProviderChange(event.currentTarget.value as AgentProvider)
+                    }
+                  >
+                    <option value="openai">OpenAI</option>
+                    <option value="google">Gemini</option>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Box>
+              <Box flex="1">
+                <Text color="fg.muted" fontSize="sm" mb={1}>
+                  Model
+                </Text>
+                <Input
+                  value={model}
+                  onChange={(event) => setModel(event.currentTarget.value)}
+                  placeholder={defaultModels[provider]}
+                />
+              </Box>
+            </HStack>
             <Textarea
               value={input}
               onChange={(event) => setInput(event.currentTarget.value)}
@@ -98,7 +151,7 @@ function AgentsPage() {
                   type="submit"
                   colorPalette="blue"
                   loading={isSending}
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || !model.trim()}
                 >
                   送信
                 </Button>
