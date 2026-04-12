@@ -10,6 +10,7 @@ import {
   FileUploadUrlSchema,
   FileDownloadUrlSchema,
 } from "../schemas/file.js";
+import * as filesRepo from "../repositories/files.js";
 
 export const filesRoute = new Hono<Env>()
   .post(
@@ -59,6 +60,13 @@ export const filesRoute = new Hono<Env>()
       const upload = await createFileUploadUrl({
         userId: user.id,
         contentType: input.contentType,
+      });
+      await filesRepo.insert(c.var.db, {
+        objectKey: upload.objectKey,
+        userId: user.id,
+        fileName: input.fileName,
+        contentType: input.contentType,
+        contentLength: input.contentLength,
       });
 
       return c.json({ upload }, 201);

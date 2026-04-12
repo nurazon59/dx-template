@@ -79,3 +79,15 @@ export const agentMessages = pgTable("agent_messages", {
   position: integer("position").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const files = pgTable("files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  objectKey: text("object_key").notNull().unique(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => authUser.id, { onDelete: "cascade" }),
+  fileName: text("file_name").notNull(),
+  contentType: text("content_type").notNull(),
+  contentLength: integer("content_length").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
