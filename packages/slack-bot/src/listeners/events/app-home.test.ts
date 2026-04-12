@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { appHomeOpened, buildHomeView } from "./app-home.js";
+import { appHomeOpened } from "./app-home.js";
+import { buildHomeView } from "../../views/home.js";
 
 describe("appHomeOpened", () => {
   it("views.publish() を Home view で呼ぶ", async () => {
