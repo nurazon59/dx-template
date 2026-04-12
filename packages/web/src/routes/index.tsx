@@ -1,5 +1,5 @@
-import { Button, Container, HStack, Heading, Spinner, Text } from "@chakra-ui/react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Button, Container, HStack, Heading, Stack, Text } from "@chakra-ui/react";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { authClient } from "../lib/auth";
 
 export const Route = createFileRoute("/")({
@@ -15,22 +15,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { session } = Route.useRouteContext();
-  const { data, isPending } = authClient.useSession();
-
-  const currentSession = data ?? session;
-  const currentUser = currentSession?.user;
-
-  if (isPending && !currentUser) {
-    return (
-      <Container maxW="4xl" py={20} textAlign="center">
-        <Spinner size="xl" />
-      </Container>
-    );
-  }
-
-  if (!currentUser) {
-    return null;
-  }
+  const currentUser = session.user;
 
   return (
     <Container maxW="4xl" py={10}>
@@ -40,7 +25,12 @@ function HomePage() {
           ログアウト
         </Button>
       </HStack>
-      <Text color="fg.muted">ようこそ、{currentUser.name}さん</Text>
+      <Stack gap={4}>
+        <Text color="fg.muted">ようこそ、{currentUser.name}さん</Text>
+        <Link to="/users" style={{ color: "var(--chakra-colors-blue-500)" }}>
+          ユーザー一覧を見る
+        </Link>
+      </Stack>
     </Container>
   );
 }

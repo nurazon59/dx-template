@@ -12,6 +12,8 @@ SPA フロントエンド（React 19 + Vite + Chakra UI v3 + TanStack Router）
 ## データフェッチ規約
 
 - 読み取り: Orval 生成の Suspense hook、書き込み: Orval 生成の mutation hook
+- 読み取りは route loader ではなく、画面コンポーネント内で `use*Suspense` hook を直接使う
+- `beforeLoad` は認証チェックや redirect など、route 遷移前の制御に限定する
 - queryKey は Orval 生成の `get*QueryKey` / `get*QueryOptions` を利用
 - 手書き hook は、返り値整形や invalidate などのドメイン固有処理が必要な場合だけ追加
 - QueryClient シングルトン: `src/lib/query-client.ts`
