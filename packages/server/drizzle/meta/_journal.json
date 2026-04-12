@@ -15,6 +15,13 @@
       "when": 1775906994384,
       "tag": "0001_clumsy_diamondback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775992119208,
+      "tag": "0002_striped_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

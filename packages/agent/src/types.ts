@@ -14,6 +14,7 @@ export const AgentChatMessageSchema = z
 export type AgentChatMessage = z.infer<typeof AgentChatMessageSchema>;
 
 export const AgentChatInputSchema = z.object({
+  conversationId: z.string().uuid().optional(),
   messages: z.array(AgentChatMessageSchema).min(1),
   provider: AgentProviderSchema.optional(),
   model: z.string().min(1).optional(),

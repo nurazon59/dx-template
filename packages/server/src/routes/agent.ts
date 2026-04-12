@@ -13,6 +13,14 @@ import { z } from "zod";
 import type { Env } from "../lib/context.js";
 import { AppError } from "../lib/errors.js";
 import { requireAuth } from "../middleware/auth.js";
+import {
+  type AgentUiMessage,
+  ensureConversation,
+  findConversation,
+  listConversations,
+  replaceConversationMessages,
+} from "../repositories/agent-conversations.js";
+import { AgentConversationSchema, AgentConversationSummarySchema } from "../schemas/agent.js";
 import { ErrorSchema } from "../schemas/error.js";
 
 function createWorkflowContext(): WorkflowContext {
@@ -22,6 +30,80 @@ function createWorkflowContext(): WorkflowContext {
 }
 
 export const agentRoute = new Hono<Env>()
+  .get(
+    "/conversations",
+    describeRoute({
+      tags: ["Agent"],
+      responses: {
+        200: {
+          description: "Agent conversation list",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({ conversations: z.array(AgentConversationSummarySchema) }),
+              ),
+            },
+          },
+        },
+        401: {
+          description: "未認証",
+          content: {
+            "application/json": {
+              schema: resolver(ErrorSchema),
+            },
+          },
+        },
+      },
+    }),
+    requireAuth,
+    async (c) => {
+      const user = c.get("user")!;
+      const conversations = await listConversations(c.var.db, user.id);
+      return c.json({ conversations });
+    },
+  )
+  .get(
+    "/conversations/:conversationId",
+    describeRoute({
+      tags: ["Agent"],
+      responses: {
+        200: {
+          description: "Agent conversation",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ conversation: AgentConversationSchema })),
+            },
+          },
+        },
+        401: {
+          description: "未認証",
+          content: {
+            "application/json": {
+              schema: resolver(ErrorSchema),
+            },
+          },
+        },
+        404: {
+          description: "会話が見つからない",
+          content: {
+            "application/json": {
+              schema: resolver(ErrorSchema),
+            },
+          },
+        },
+      },
+    }),
+    requireAuth,
+    async (c) => {
+      const user = c.get("user")!;
+      const { conversationId } = c.req.param();
+      const conversation = await findConversation(c.var.db, { conversationId, userId: user.id });
+      if (!conversation) {
+        throw new AppError("AGENT_CONVERSATION_NOT_FOUND", "Agent conversation not found", 404);
+      }
+      return c.json({ conversation });
+    },
+  )
   .post(
     "/runs",
     describeRoute({
@@ -131,10 +213,21 @@ export const agentRoute = new Hono<Env>()
       const input = c.req.valid("json");
       const user = c.get("user")!;
       const context = createWorkflowContext();
+      const conversationId = input.conversationId ?? crypto.randomUUID();
+      const conversation = await ensureConversation(c.var.db, {
+        conversationId,
+        userId: user.id,
+        messages: input.messages as AgentUiMessage[],
+      });
+
+      if (!conversation) {
+        throw new AppError("AGENT_CONVERSATION_NOT_FOUND", "Agent conversation not found", 404);
+      }
 
       try {
         return await streamAgentChat(
           {
+            conversationId,
             messages: input.messages,
             model: input.model,
             provider: input.provider,
@@ -144,6 +237,15 @@ export const agentRoute = new Hono<Env>()
             source: "web",
           },
           context,
+          {
+            onFinish: async ({ messages }) => {
+              await replaceConversationMessages(c.var.db, {
+                conversationId,
+                userId: user.id,
+                messages: messages as AgentUiMessage[],
+              });
+            },
+          },
         );
       } catch (err) {
         if (err instanceof AgentConfigurationError) {

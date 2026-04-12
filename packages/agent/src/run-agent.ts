@@ -2,11 +2,13 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  consumeStream,
   generateText,
   stepCountIs,
   streamText,
   tool,
   type UIMessage,
+  type UIMessageStreamOnFinishCallback,
 } from "ai";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
@@ -60,6 +62,10 @@ export interface RunAgentOptions {
 export interface StreamAgentChatInput extends AgentChatInput {
   actor?: AgentRunInput["actor"];
   source: AgentRunInput["source"];
+}
+
+export interface StreamAgentChatOptions {
+  onFinish?: UIMessageStreamOnFinishCallback<UIMessage>;
 }
 
 interface AgentModelConfig {
@@ -292,6 +298,7 @@ export async function runAgent(
 export async function streamAgentChat(
   input: StreamAgentChatInput,
   context: WorkflowContext,
+  options: StreamAgentChatOptions = {},
 ): Promise<Response> {
   const message = getLatestUserMessageText(input.messages);
   const runInput: AgentRunInput = {
@@ -302,6 +309,7 @@ export async function streamAgentChat(
 
   if (process.env["AI_AGENT_MODE"] === "mock") {
     const stream = createUIMessageStream({
+      originalMessages: input.messages as UIMessage[],
       execute: async ({ writer }) => {
         const result = await runMockAgent(runInput, context, {});
         const textPartId = result.runId;
@@ -312,8 +320,9 @@ export async function streamAgentChat(
         writer.write({ type: "finish", finishReason: "stop" });
       },
       onError: (error) => (error instanceof Error ? error.message : String(error)),
+      onFinish: options.onFinish,
     });
-    return createUIMessageStreamResponse({ stream });
+    return createUIMessageStreamResponse({ stream, consumeSseStream: consumeStream });
   }
 
   const toolTrace: AgentToolTrace[] = [];
@@ -339,6 +348,9 @@ export async function streamAgentChat(
   });
 
   return result.toUIMessageStreamResponse({
+    originalMessages: input.messages as UIMessage[],
     onError: (error) => (error instanceof Error ? error.message : String(error)),
+    onFinish: options.onFinish,
+    consumeSseStream: consumeStream,
   });
 }

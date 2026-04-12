@@ -41,6 +41,52 @@ export interface Error {
   message: string;
 }
 
+export interface AgentConversationSummary {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  createdAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  updatedAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  lastMessageAt: string;
+}
+
+export type AgentMessageRole = (typeof AgentMessageRole)[keyof typeof AgentMessageRole];
+
+export const AgentMessageRole = {
+  system: "system",
+  user: "user",
+  assistant: "assistant",
+} as const;
+
+export type AgentMessagePartsItem = {
+  type: string;
+  [key: string]: unknown;
+};
+
+export interface AgentMessage {
+  id: string;
+  role: AgentMessageRole;
+  parts: AgentMessagePartsItem[];
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  createdAt: string;
+}
+
+export interface AgentConversation {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  createdAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  updatedAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  lastMessageAt: string;
+  messages: AgentMessage[];
+}
+
 export interface ImageUploadUrl {
   uploadUrl: string;
   objectKey: string;
@@ -104,6 +150,14 @@ export type GetApiTime200 = {
 
 export type GetApiMe200 = {
   user: AuthUser;
+};
+
+export type GetApiAgentConversations200 = {
+  conversations: AgentConversationSummary[];
+};
+
+export type GetApiAgentConversationsByConversationId200 = {
+  conversation: AgentConversation;
 };
 
 export type PostApiAgentRunsBodyActor = {
@@ -786,6 +840,554 @@ export function useGetApiMeSuspense<TData = Awaited<ReturnType<typeof getApiMe>>
   queryClient?: QueryClient,
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetApiMeSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAgentConversationsResponse200 = {
+  data: GetApiAgentConversations200;
+  status: 200;
+};
+
+export type getApiAgentConversationsResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentConversationsResponseSuccess = getApiAgentConversationsResponse200 & {
+  headers: Headers;
+};
+export type getApiAgentConversationsResponseError = getApiAgentConversationsResponse401 & {
+  headers: Headers;
+};
+
+export type getApiAgentConversationsResponse =
+  | getApiAgentConversationsResponseSuccess
+  | getApiAgentConversationsResponseError;
+
+export const getGetApiAgentConversationsUrl = () => {
+  return `/api/agent/conversations`;
+};
+
+export const getApiAgentConversations = async (
+  options?: RequestInit,
+): Promise<getApiAgentConversationsResponse> => {
+  const res = await fetch(getGetApiAgentConversationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentConversationsResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiAgentConversationsResponse;
+};
+
+export const getGetApiAgentConversationsQueryKey = () => {
+  return [`/api/agent/conversations`] as const;
+};
+
+export const getGetApiAgentConversationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentConversationsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentConversations>>> = ({
+    signal,
+  }) => getApiAgentConversations({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentConversations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentConversationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentConversations>>
+>;
+export type GetApiAgentConversationsQueryError = Error;
+
+export function useGetApiAgentConversations<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentConversations>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentConversations>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversations<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentConversations>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentConversations>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversations<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentConversations<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentConversationsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentConversationsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentConversationsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentConversations>>> = ({
+    signal,
+  }) => getApiAgentConversations({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentConversations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentConversationsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentConversations>>
+>;
+export type GetApiAgentConversationsSuspenseQueryError = Error;
+
+export function useGetApiAgentConversationsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentConversationsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversations>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentConversations>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentConversationsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAgentConversationsByConversationIdResponse200 = {
+  data: GetApiAgentConversationsByConversationId200;
+  status: 200;
+};
+
+export type getApiAgentConversationsByConversationIdResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentConversationsByConversationIdResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type getApiAgentConversationsByConversationIdResponseSuccess =
+  getApiAgentConversationsByConversationIdResponse200 & {
+    headers: Headers;
+  };
+export type getApiAgentConversationsByConversationIdResponseError = (
+  | getApiAgentConversationsByConversationIdResponse401
+  | getApiAgentConversationsByConversationIdResponse404
+) & {
+  headers: Headers;
+};
+
+export type getApiAgentConversationsByConversationIdResponse =
+  | getApiAgentConversationsByConversationIdResponseSuccess
+  | getApiAgentConversationsByConversationIdResponseError;
+
+export const getGetApiAgentConversationsByConversationIdUrl = (conversationId: string) => {
+  return `/api/agent/conversations/${conversationId}`;
+};
+
+export const getApiAgentConversationsByConversationId = async (
+  conversationId: string,
+  options?: RequestInit,
+): Promise<getApiAgentConversationsByConversationIdResponse> => {
+  const res = await fetch(getGetApiAgentConversationsByConversationIdUrl(conversationId), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentConversationsByConversationIdResponse["data"] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getApiAgentConversationsByConversationIdResponse;
+};
+
+export const getGetApiAgentConversationsByConversationIdQueryKey = (conversationId: string) => {
+  return [`/api/agent/conversations/${conversationId}`] as const;
+};
+
+export const getGetApiAgentConversationsByConversationIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAgentConversationsByConversationIdQueryKey(conversationId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+  > = ({ signal }) =>
+    getApiAgentConversationsByConversationId(conversationId, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, enabled: !!conversationId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentConversationsByConversationIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+>;
+export type GetApiAgentConversationsByConversationIdQueryError = Error;
+
+export function useGetApiAgentConversationsByConversationId<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsByConversationId<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsByConversationId<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentConversationsByConversationId<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentConversationsByConversationIdQueryOptions(
+    conversationId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentConversationsByConversationIdSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAgentConversationsByConversationIdQueryKey(conversationId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+  > = ({ signal }) =>
+    getApiAgentConversationsByConversationId(conversationId, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentConversationsByConversationIdSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>
+>;
+export type GetApiAgentConversationsByConversationIdSuspenseQueryError = Error;
+
+export function useGetApiAgentConversationsByConversationIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsByConversationIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentConversationsByConversationIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentConversationsByConversationIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+  TError = Error,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentConversationsByConversationId>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentConversationsByConversationIdSuspenseQueryOptions(
+    conversationId,
+    options,
+  );
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,

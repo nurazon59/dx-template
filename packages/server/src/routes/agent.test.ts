@@ -20,13 +20,30 @@ vi.mock("@dx-template/agent", async () => {
   };
 });
 
+vi.mock("../repositories/agent-conversations.js", () => ({
+  ensureConversation: vi.fn(),
+  findConversation: vi.fn(),
+  listConversations: vi.fn(),
+  replaceConversationMessages: vi.fn(),
+}));
+
 import { app } from "../app.js";
 import { runAgent, streamAgentChat } from "@dx-template/agent";
 import { auth } from "../lib/auth.js";
+import {
+  ensureConversation,
+  findConversation,
+  listConversations,
+  replaceConversationMessages,
+} from "../repositories/agent-conversations.js";
 
 const mockRunAgent = vi.mocked(runAgent);
 const mockStreamAgentChat = vi.mocked(streamAgentChat);
 const mockGetSession = vi.mocked(auth.api.getSession);
+const mockEnsureConversation = vi.mocked(ensureConversation);
+const mockFindConversation = vi.mocked(findConversation);
+const mockListConversations = vi.mocked(listConversations);
+const mockReplaceConversationMessages = vi.mocked(replaceConversationMessages);
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -48,6 +65,105 @@ beforeEach(() => {
       createdAt: new Date("2024-01-01T00:00:00.000Z"),
       updatedAt: new Date("2024-01-01T00:00:00.000Z"),
     },
+  });
+  mockEnsureConversation.mockResolvedValue({
+    id: "00000000-0000-4000-8000-000000000001",
+    title: "週次レポートを作って",
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    lastMessageAt: new Date("2024-01-01T00:00:00.000Z"),
+    messages: [],
+  });
+  mockReplaceConversationMessages.mockResolvedValue(undefined);
+});
+
+describe("GET /api/agent/conversations", () => {
+  it("Agent conversation list を返す", async () => {
+    const timestamp = "2024-01-01T00:00:00.000Z";
+    const conversations = [
+      {
+        id: "00000000-0000-4000-8000-000000000001",
+        title: "週次レポートを作って",
+        createdAt: new Date(timestamp),
+        updatedAt: new Date(timestamp),
+        lastMessageAt: new Date(timestamp),
+      },
+    ];
+    mockListConversations.mockResolvedValue(conversations);
+
+    const res = await app.request("/api/agent/conversations");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      conversations: [
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          title: "週次レポートを作って",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          lastMessageAt: timestamp,
+        },
+      ],
+    });
+    expect(mockListConversations).toHaveBeenCalledWith({}, "user-1");
+  });
+});
+
+describe("GET /api/agent/conversations/:conversationId", () => {
+  it("Agent conversation を返す", async () => {
+    const timestamp = "2024-01-01T00:00:00.000Z";
+    const conversation = {
+      id: "00000000-0000-4000-8000-000000000001",
+      title: "週次レポートを作って",
+      createdAt: new Date(timestamp),
+      updatedAt: new Date(timestamp),
+      lastMessageAt: new Date(timestamp),
+      messages: [
+        {
+          id: "message-1",
+          role: "user" as const,
+          parts: [{ type: "text", text: "週次レポートを作って" }],
+          createdAt: new Date(timestamp),
+        },
+      ],
+    };
+    mockFindConversation.mockResolvedValue(conversation);
+
+    const res = await app.request("/api/agent/conversations/00000000-0000-4000-8000-000000000001");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      conversation: {
+        id: "00000000-0000-4000-8000-000000000001",
+        title: "週次レポートを作って",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        lastMessageAt: timestamp,
+        messages: [
+          {
+            id: "message-1",
+            role: "user",
+            parts: [{ type: "text", text: "週次レポートを作って" }],
+            createdAt: timestamp,
+          },
+        ],
+      },
+    });
+    expect(mockFindConversation).toHaveBeenCalledWith(
+      {},
+      {
+        conversationId: "00000000-0000-4000-8000-000000000001",
+        userId: "user-1",
+      },
+    );
+  });
+
+  it("会話が見つからない場合は 404 を返す", async () => {
+    mockFindConversation.mockResolvedValue(undefined);
+
+    const res = await app.request("/api/agent/conversations/00000000-0000-4000-8000-000000000001");
+
+    expect(res.status).toBe(404);
   });
 });
 
@@ -165,14 +281,15 @@ describe("POST /api/agent/chat", () => {
     const messages = [
       {
         id: "message-1",
-        role: "user",
-        parts: [{ type: "text", text: "週次レポートを作って" }],
+        role: "user" as const,
+        parts: [{ type: "text" as const, text: "週次レポートを作って" }],
       },
     ];
     const res = await app.request("/api/agent/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        conversationId: "00000000-0000-4000-8000-000000000001",
         messages,
         provider: "google",
         model: "gemini-3-flash-preview",
@@ -181,8 +298,17 @@ describe("POST /api/agent/chat", () => {
 
     expect(res.status).toBe(200);
     expect(await res.text()).toBe("stream");
+    expect(mockEnsureConversation).toHaveBeenCalledWith(
+      {},
+      {
+        conversationId: "00000000-0000-4000-8000-000000000001",
+        userId: "user-1",
+        messages,
+      },
+    );
     expect(mockStreamAgentChat).toHaveBeenCalledWith(
       {
+        conversationId: "00000000-0000-4000-8000-000000000001",
         messages,
         provider: "google",
         model: "gemini-3-flash-preview",
@@ -192,6 +318,27 @@ describe("POST /api/agent/chat", () => {
         source: "web",
       },
       { queries: {} },
+      {
+        onFinish: expect.any(Function),
+      },
+    );
+
+    const onFinish = mockStreamAgentChat.mock.calls[0]![2]!.onFinish!;
+    await onFinish({
+      messages,
+      isContinuation: false,
+      isAborted: false,
+      responseMessage: messages[0]!,
+      finishReason: "stop",
+    });
+
+    expect(mockReplaceConversationMessages).toHaveBeenCalledWith(
+      {},
+      {
+        conversationId: "00000000-0000-4000-8000-000000000001",
+        userId: "user-1",
+        messages,
+      },
     );
   });
 
