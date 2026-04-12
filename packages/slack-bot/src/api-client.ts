@@ -1,9 +1,9 @@
 import createClient from "openapi-fetch";
 import type { components, paths } from "./lib/api/schema.js";
+import { env } from "./env.js";
 
-const baseUrl = process.env["SERVER_URL"] ?? "http://localhost:3000";
 const client = createClient<paths>({
-  baseUrl,
+  baseUrl: env.SERVER_URL,
   fetch: (request) => globalThis.fetch(request),
 });
 

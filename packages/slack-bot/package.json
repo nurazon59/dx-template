@@ -16,7 +16,8 @@
   "dependencies": {
     "@slack/bolt": "^4.3.0",
     "openapi-fetch": "^0.17.0",
-    "slack-block-builder": "^2.8.0"
+    "slack-block-builder": "^2.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",

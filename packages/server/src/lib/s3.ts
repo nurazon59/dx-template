@@ -2,6 +2,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
 import { AppError } from "./errors.js";
+import { env } from "../env.js";
 
 export const ALLOWED_IMAGE_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const MAX_IMAGE_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024;
@@ -16,11 +17,11 @@ const contentTypeExtensions: Record<AllowedImageContentType, string> = {
 };
 
 const s3Client = new S3Client({
-  region: process.env["AWS_REGION"] ?? "ap-northeast-1",
-  ...(process.env["S3_ENDPOINT"] && {
-    endpoint: process.env["S3_ENDPOINT"],
+  region: env.AWS_REGION,
+  ...(env.S3_ENDPOINT && {
+    endpoint: env.S3_ENDPOINT,
   }),
-  forcePathStyle: process.env["S3_FORCE_PATH_STYLE"] === "true",
+  forcePathStyle: env.S3_FORCE_PATH_STYLE,
 });
 
 export type CreateImageUploadUrlInput = {
@@ -38,7 +39,7 @@ export type ImageUploadUrl = {
 export async function createImageUploadUrl(
   input: CreateImageUploadUrlInput,
 ): Promise<ImageUploadUrl> {
-  const bucket = process.env["S3_UPLOAD_BUCKET"] ?? process.env["S3_BUCKET"];
+  const bucket = env.S3_UPLOAD_BUCKET ?? env.S3_BUCKET;
   if (!bucket) {
     throw new AppError("UPLOAD_STORAGE_NOT_CONFIGURED", "Upload storage is not configured", 500);
   }
@@ -68,7 +69,7 @@ function createImageObjectKey(userId: string, contentType: AllowedImageContentTy
 }
 
 function createPublicUrl(objectKey: string) {
-  const baseUrl = process.env["S3_PUBLIC_BASE_URL"];
+  const baseUrl = env.S3_PUBLIC_BASE_URL;
   if (!baseUrl) {
     return undefined;
   }

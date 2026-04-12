@@ -35,11 +35,17 @@ vi.mock("@ai-sdk/google", () => ({
   google: vi.fn((model: string) => ({ model })),
 }));
 
+vi.mock("./env.js", () => ({
+  env: new Proxy({} as Record<string, string | undefined>, {
+    get: (_target, prop: string) => process.env[prop],
+  }),
+}));
+
 import { runAgent, runMockAgent, streamAgentChat } from "./index.js";
 
 beforeEach(() => {
   delete process.env["AI_AGENT_MODE"];
-  delete process.env["AI_PROVIDER"];
+  process.env["AI_PROVIDER"] = "openai";
   delete process.env["AI_MODEL"];
   delete process.env["GOOGLE_GENERATIVE_AI_API_KEY"];
   process.env["OPENAI_API_KEY"] = "test-api-key";

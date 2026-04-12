@@ -1,7 +1,8 @@
 import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { env } from "../env.js";
 
-const tableName = process.env["DYNAMODB_TABLE_NAME"] ?? "";
+const tableName = env.DYNAMODB_TABLE_NAME;
 
 export interface EventInput {
   type: string;
