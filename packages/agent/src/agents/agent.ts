@@ -11,6 +11,7 @@ import { buildAgentSystemPrompt } from "../prompts/agent.js";
 import { triageTool } from "../tools/triage.js";
 import { reportDraftTool } from "../tools/report-draft.js";
 import { xlsxParseTool } from "../tools/xlsx-parse.js";
+import { pdfParseTool } from "../tools/pdf-parse.js";
 import type {
   AgentChatInput,
   AgentRunInput,
@@ -106,6 +107,11 @@ function createTools(
       toolTrace: state.toolTrace,
     }),
     parseXlsx: xlsxParseTool(context, {
+      message: state.message,
+      setWorkflow: state.setWorkflow,
+      toolTrace: state.toolTrace,
+    }),
+    parsePdf: pdfParseTool(context, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,

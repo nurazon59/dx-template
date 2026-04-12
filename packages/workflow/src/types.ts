@@ -1,4 +1,4 @@
-import type { XlsxParseOptions, XlsxSheet } from "@dx-template/shared";
+import type { XlsxParseOptions, XlsxSheet, PdfParseOptions, PdfPage } from "@dx-template/shared";
 
 export interface WorkflowContext {
   queries: {
@@ -9,6 +9,7 @@ export interface WorkflowContext {
       contentType: string,
     ) => Promise<string>;
     parseXlsx?: (buffer: Uint8Array, options?: XlsxParseOptions) => Promise<XlsxSheet[]>;
+    parsePdf?: (buffer: Uint8Array, options?: PdfParseOptions) => Promise<PdfPage[]>;
   };
 }
 

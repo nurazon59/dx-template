@@ -3,6 +3,7 @@ import { jobStore } from "./runner.js";
 import { triageWorkflow } from "./workflows/triage.js";
 import { reportWorkflow } from "./workflows/report.js";
 import { xlsxParseWorkflow } from "./workflows/xlsx-parse.js";
+import { pdfParseWorkflow } from "./workflows/pdf-parse.js";
 
 export { jobStore };
 
@@ -10,6 +11,7 @@ export const workflowRegistry = {
   triage: triageWorkflow,
   report: reportWorkflow,
   xlsxParse: xlsxParseWorkflow,
+  pdfParse: pdfParseWorkflow,
 };
 
 export type WorkflowType = keyof typeof workflowRegistry;
