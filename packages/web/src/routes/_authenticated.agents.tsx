@@ -1,7 +1,8 @@
 import { Box, Button, Drawer, HStack, Portal, Stack, Text } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useQueryState, parseAsString } from "nuqs";
+import { useMemo, useState } from "react";
 import { getAgentConversation, listAgentConversations } from "../lib/agent-conversations";
 import { authClient } from "../lib/auth";
 import { ChatWorkspace } from "../features/agent/components/ChatWorkspace";
@@ -19,10 +20,12 @@ export const Route = createFileRoute("/_authenticated/agents")({
 });
 
 function AgentsPage() {
-  const [activeConversationId, setActiveConversationId] = useState<string>(() =>
-    crypto.randomUUID(),
-  );
-  const [isNewConversation, setIsNewConversation] = useState(true);
+  const [conversationId, setConversationId] = useQueryState("conversationId", parseAsString);
+  // conversationIdがURLにない場合は新規会話用のIDを生成
+  const newConversationId = useMemo(() => crypto.randomUUID(), []);
+  const activeConversationId = conversationId ?? newConversationId;
+  const isNewConversation = conversationId === null;
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const conversationsQuery = useQuery({
     queryKey: ["agent-conversations"],
@@ -35,14 +38,12 @@ function AgentsPage() {
   });
 
   const startNewConversation = () => {
-    setActiveConversationId(crypto.randomUUID());
-    setIsNewConversation(true);
+    void setConversationId(null);
     setIsDrawerOpen(false);
   };
 
-  const selectConversation = (conversationId: string) => {
-    setActiveConversationId(conversationId);
-    setIsNewConversation(false);
+  const selectConversation = (id: string) => {
+    void setConversationId(id);
     setIsDrawerOpen(false);
   };
 

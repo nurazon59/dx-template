@@ -13,6 +13,7 @@ import { useChat } from "@ai-sdk/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { ChatMessageBubble } from "./ChatMessageBubble";
@@ -22,15 +23,14 @@ const defaultModels = {
   google: "gemini-3-flash-preview",
 } as const;
 
-type AgentProvider = keyof typeof defaultModels;
+const providers = ["openai", "google"] as const;
+type AgentProvider = (typeof providers)[number];
 
-const chatSchema = z.object({
-  provider: z.enum(["openai", "google"]),
-  model: z.string().min(1, "モデル名を入力してください"),
+const messageSchema = z.object({
   message: z.string().min(1, "依頼内容を入力してください"),
 });
 
-type ChatFormValues = z.infer<typeof chatSchema>;
+type MessageFormValues = z.infer<typeof messageSchema>;
 
 interface ChatWorkspaceProps {
   conversationId: string;
@@ -38,6 +38,16 @@ interface ChatWorkspaceProps {
 }
 
 export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspaceProps) {
+  const [provider, setProvider] = useQueryState(
+    "provider",
+    parseAsStringLiteral(providers).withDefault("openai"),
+  );
+  const [model, setModel] = useQueryState("model", {
+    defaultValue: defaultModels[provider],
+    parse: (v) => v,
+    serialize: (v) => v,
+  });
+
   const queryClient = useQueryClient();
   const { messages, sendMessage, status, error, stop } = useChat({
     id: conversationId,
@@ -65,39 +75,31 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
     formState: { errors },
-  } = useForm<ChatFormValues>({
-    resolver: zodResolver(chatSchema),
-    defaultValues: {
-      provider: "openai",
-      model: defaultModels.openai,
-      message: "",
-    },
+  } = useForm<MessageFormValues>({
+    resolver: zodResolver(messageSchema),
+    defaultValues: { message: "" },
   });
 
-  const currentProvider = watch("provider");
-
-  const onSubmit = async (data: ChatFormValues) => {
+  const onSubmit = async (data: MessageFormValues) => {
     if (isSending) return;
 
     await sendMessage(
       { text: data.message },
       {
         body: {
-          model: data.model.trim(),
-          provider: data.provider,
+          model: model.trim(),
+          provider,
         },
       },
     );
-    reset({ provider: data.provider, model: data.model, message: "" });
+    reset({ message: "" });
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextProvider = e.currentTarget.value as AgentProvider;
-    setValue("provider", nextProvider);
-    setValue("model", defaultModels[nextProvider]);
+    void setProvider(nextProvider);
+    void setModel(defaultModels[nextProvider]);
   };
 
   return (
@@ -129,7 +131,7 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
                   Provider
                 </Field.Label>
                 <NativeSelect.Root>
-                  <NativeSelect.Field {...register("provider")} onChange={handleProviderChange}>
+                  <NativeSelect.Field value={provider} onChange={handleProviderChange}>
                     <option value="openai">OpenAI</option>
                     <option value="google">Gemini</option>
                   </NativeSelect.Field>
@@ -138,12 +140,15 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
               </Field.Root>
             </Box>
             <Box flex="1">
-              <Field.Root invalid={!!errors.model}>
+              <Field.Root>
                 <Field.Label fontSize="sm" color="fg.muted" mb={1}>
                   Model
                 </Field.Label>
-                <Input {...register("model")} placeholder={defaultModels[currentProvider]} />
-                <Field.ErrorText>{errors.model?.message}</Field.ErrorText>
+                <Input
+                  value={model}
+                  onChange={(e) => void setModel(e.currentTarget.value)}
+                  placeholder={defaultModels[provider]}
+                />
               </Field.Root>
             </Box>
           </HStack>
