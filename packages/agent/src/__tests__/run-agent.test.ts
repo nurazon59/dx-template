@@ -27,9 +27,7 @@ vi.mock("ai", async () => {
             toolResults: [{ toolCallId: "tc-1", toolName: "runTriage", output: triageResult }],
           },
           {
-            toolCalls: [
-              { toolCallId: "tc-2", toolName: "createReportDraft", input: reportArgs },
-            ],
+            toolCalls: [{ toolCallId: "tc-2", toolName: "createReportDraft", input: reportArgs }],
             toolResults: [
               { toolCallId: "tc-2", toolName: "createReportDraft", output: reportDraftResult },
             ],
@@ -51,13 +49,13 @@ vi.mock("@ai-sdk/google", () => ({
   google: vi.fn((model: string) => ({ model })),
 }));
 
-vi.mock("./env.js", () => ({
+vi.mock("../env.js", () => ({
   env: new Proxy({} as Record<string, string | undefined>, {
     get: (_target, prop: string) => process.env[prop],
   }),
 }));
 
-import { runAgent, runMockAgent, streamAgentChat } from "./index.js";
+import { runAgent, runMockAgent, streamAgentChat } from "../index.js";
 
 beforeEach(() => {
   delete process.env["AI_AGENT_MODE"];
