@@ -19,10 +19,12 @@ import { fileSearchTool } from "../tools/file-search.js";
 import { saveMemoryTool, type SaveMemoryFn } from "../tools/save-memory.js";
 import type {
   AgentChatInput,
+  AgentPendingResult,
   AgentRunInput,
   AgentRunMetrics,
   AgentRunResult,
   AgentToolTrace,
+  ResumeAgentInput,
   StreamAgentChatInput,
 } from "../types.js";
 import { getConfiguredModel } from "../providers/index.js";
@@ -37,13 +39,14 @@ export interface AgentContext {
 export interface RunAgentOptions {
   runId?: string;
   model?: string;
+  hitlToolNames?: string[];
 }
 
 export async function runAgent(
   input: AgentRunInput,
   context: WorkflowContext | AgentContext,
   options: RunAgentOptions = {},
-): Promise<AgentRunResult> {
+): Promise<AgentRunResult | AgentPendingResult> {
   const runId = options.runId ?? crypto.randomUUID();
   const agentCtx = "workflow" in context ? context : { workflow: context };
 
@@ -53,11 +56,86 @@ export async function runAgent(
     model: getConfiguredModel({ model: options.model }),
     system: buildAgentSystemPrompt(input.source, input.actor, agentCtx.memories),
     prompt: input.message,
-    tools: createTools(agentCtx, { message: input.message }),
+    tools: createTools(agentCtx, { message: input.message }, options.hitlToolNames),
     stopWhen: stepCountIs(5),
   });
 
   const durationMs = Math.round(performance.now() - startTime);
+  const metrics: AgentRunMetrics = {
+    inputTokens: result.totalUsage.inputTokens ?? 0,
+    outputTokens: result.totalUsage.outputTokens ?? 0,
+    totalTokens: result.totalUsage.totalTokens ?? 0,
+    durationMs,
+    stepCount: result.steps.length,
+    model: options.model ?? "default",
+  };
+
+  // AI SDK の tool-approval-request を検出
+  const responseMessages = (result as { response?: { messages?: unknown[] } }).response?.messages;
+  const approvalRequest = responseMessages
+    ?.flatMap((m: unknown) => {
+      const msg = m as { role?: string; content?: unknown[] };
+      return Array.isArray(msg.content) ? msg.content : [];
+    })
+    .find((c: unknown) => (c as { type?: string }).type === "tool-approval-request") as
+    | {
+        approvalId: string;
+        toolCall: { toolCallId: string; toolName: string; input: unknown };
+      }
+    | undefined;
+
+  if (approvalRequest) {
+    return {
+      runId,
+      message: result.text,
+      pendingApproval: {
+        approvalId: approvalRequest.approvalId,
+        toolCallId: approvalRequest.toolCall.toolCallId,
+        toolName: approvalRequest.toolCall.toolName,
+        toolArgs: approvalRequest.toolCall.input,
+        messages: responseMessages!,
+      },
+      metrics,
+    };
+  }
+
+  return buildRunResult(runId, result as Parameters<typeof buildRunResult>[1], metrics);
+}
+
+export async function resumeAgent(
+  input: ResumeAgentInput,
+  context: WorkflowContext | AgentContext,
+  options: { model?: string } = {},
+): Promise<AgentRunResult> {
+  const agentCtx = "workflow" in context ? context : { workflow: context };
+  const startTime = performance.now();
+
+  const approvalResponse = {
+    type: "tool-approval-response" as const,
+    approvalId: input.approvalId,
+    approved: input.approved,
+    ...(input.reason ? { reason: input.reason } : {}),
+  };
+
+  const previousMessages = input.previousMessages as Array<Record<string, unknown>>;
+  const lastMessage = previousMessages[previousMessages.length - 1];
+  const messagesWithApproval = [
+    ...previousMessages.slice(0, -1),
+    {
+      ...lastMessage,
+      content: [...((lastMessage?.content as unknown[]) ?? []), approvalResponse],
+    },
+  ];
+
+  const result = await generateText({
+    model: getConfiguredModel({ model: options.model }),
+    messages: messagesWithApproval as NonNullable<Parameters<typeof generateText>[0]["messages"]>,
+    tools: createTools(agentCtx, { message: "" }),
+    stopWhen: stepCountIs(5),
+  });
+
+  const durationMs = Math.round(performance.now() - startTime);
+  const runId = crypto.randomUUID();
 
   return buildRunResult(runId, result as Parameters<typeof buildRunResult>[1], {
     inputTokens: result.totalUsage.inputTokens ?? 0,
@@ -174,7 +252,7 @@ function buildRunResult(
   };
 }
 
-function createTools(context: AgentContext, state: { message: string }) {
+function createTools(context: AgentContext, state: { message: string }, hitlToolNames?: string[]) {
   const baseTools = {
     runTriage: triageTool({ message: state.message }),
     createReportDraft: reportDraftTool({ message: state.message }),
@@ -183,13 +261,18 @@ function createTools(context: AgentContext, state: { message: string }) {
     createXlsx: xlsxCreateTool(context.workflow),
     createChart: chartCreateTool(context.workflow),
     searchFiles: fileSearchTool(context.workflow),
+    ...(context.saveMemory ? { saveMemory: saveMemoryTool(context.saveMemory) } : {}),
   };
 
-  if (context.saveMemory) {
-    return { ...baseTools, saveMemory: saveMemoryTool(context.saveMemory) };
-  }
+  if (!hitlToolNames) return baseTools;
 
-  return baseTools;
+  const tools = { ...baseTools } as Record<string, Record<string, unknown>>;
+  for (const name of hitlToolNames) {
+    if (name in tools) {
+      tools[name] = { ...tools[name], needsApproval: true };
+    }
+  }
+  return tools as unknown as typeof baseTools;
 }
 
 function getLatestUserMessageText(messages: AgentChatInput["messages"]): string {

@@ -37,16 +37,27 @@ export interface WorkflowContext {
   };
 }
 
+export interface PendingApprovalData {
+  approvalId: string;
+  toolCallId: string;
+  toolName: string;
+  toolArgs: unknown;
+  messages: unknown[];
+}
+
 export interface Job {
   jobId: string;
   workflowType: string;
-  status: "running" | "done" | "failed" | "suspended";
+  status: "running" | "done" | "failed" | "suspended" | "pending-approval";
   currentStep: string;
   payload: unknown;
   result?: unknown;
   error?: string;
   suspendedStepIndex?: number;
   suspendedCtx?: unknown;
+  pendingApproval?: PendingApprovalData;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface StepEntry {

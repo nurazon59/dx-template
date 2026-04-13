@@ -76,6 +76,16 @@ export const AgentToolTraceSchema = z.object({
 });
 export type AgentToolTrace = z.infer<typeof AgentToolTraceSchema>;
 
+export const AgentRunMetricsSchema = z.object({
+  inputTokens: z.number(),
+  outputTokens: z.number(),
+  totalTokens: z.number(),
+  durationMs: z.number(),
+  stepCount: z.number(),
+  model: z.string(),
+});
+export type AgentRunMetrics = z.infer<typeof AgentRunMetricsSchema>;
+
 export const AgentRunResultSchema = z.object({
   runId: z.string(),
   workflow: z.enum(["triage", "reportDraft", "xlsxParse", "pdfParse", "xlsxCreate", "chartCreate"]),
@@ -84,6 +94,7 @@ export const AgentRunResultSchema = z.object({
   trace: z.object({
     tools: z.array(AgentToolTraceSchema),
   }),
+  metrics: AgentRunMetricsSchema,
 });
 export type AgentRunResult = z.infer<typeof AgentRunResultSchema>;
 
@@ -91,3 +102,35 @@ export interface StreamAgentChatInput extends AgentChatInput {
   actor?: AgentRunInput["actor"];
   source: AgentRunInput["source"];
 }
+
+export const PendingApprovalSchema = z.object({
+  approvalId: z.string(),
+  toolCallId: z.string(),
+  toolName: z.string(),
+  toolArgs: z.unknown(),
+  messages: z.array(z.unknown()),
+});
+export type PendingApproval = z.infer<typeof PendingApprovalSchema>;
+
+export const AgentPendingResultSchema = z.object({
+  runId: z.string(),
+  message: z.string(),
+  pendingApproval: PendingApprovalSchema,
+  metrics: AgentRunMetricsSchema,
+});
+export type AgentPendingResult = z.infer<typeof AgentPendingResultSchema>;
+
+export const ResumeAgentInputSchema = z.object({
+  approvalId: z.string(),
+  approved: z.boolean(),
+  reason: z.string().optional(),
+  previousMessages: z.array(z.unknown()),
+  source: z.enum(["web", "slack"]),
+  actor: z
+    .object({
+      userId: z.string().optional(),
+      slackUserId: z.string().optional(),
+    })
+    .optional(),
+});
+export type ResumeAgentInput = z.infer<typeof ResumeAgentInputSchema>;

@@ -31,6 +31,15 @@ export async function runMockAgent(
     output: triageResult,
   });
 
+  const mockMetrics = {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+    durationMs: 0,
+    stepCount: 1,
+    model: "mock",
+  };
+
   if (intent !== "report") {
     return {
       runId,
@@ -38,6 +47,7 @@ export async function runMockAgent(
       message: "mock agent が triage workflow を起動しました。",
       result: triageResult,
       trace: { tools: toolTrace },
+      metrics: mockMetrics,
     };
   }
 
@@ -62,5 +72,6 @@ export async function runMockAgent(
     message: "mock agent が reportDraft workflow を起動しました。",
     result: reportDraftResult,
     trace: { tools: toolTrace },
+    metrics: { ...mockMetrics, stepCount: 2 },
   };
 }

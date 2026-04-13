@@ -12,7 +12,11 @@ export const fileSearchTool = (context: WorkflowContext) =>
     }),
     execute: async ({ query, contentType }) => {
       if (!context.queries.searchFiles || !context.userId) {
-        return { workflow: "fileSearch" as const, files: [], message: "ファイル検索機能が利用できません" };
+        return {
+          workflow: "fileSearch" as const,
+          files: [],
+          message: "ファイル検索機能が利用できません",
+        };
       }
       const files = await context.queries.searchFiles({
         query,

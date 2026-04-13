@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowContext } from "@dx-template/workflow";
+import type { AgentRunResult } from "../types.js";
 
 /**
  * generateText モック: prompt の内容に応じて適切なツールを呼び分ける。
@@ -120,11 +121,9 @@ describe("file-tools E2E", () => {
       parseXlsx: vi.fn().mockResolvedValue(mockSheets),
     });
 
-    const result = await runAgent(
-      { message: "xlsxParse", source: "web" },
-      context,
-      { runId: "run-xlsx-parse" },
-    );
+    const result = (await runAgent({ message: "xlsxParse", source: "web" }, context, {
+      runId: "run-xlsx-parse",
+    })) as AgentRunResult;
 
     expect(result.runId).toBe("run-xlsx-parse");
     expect(result.workflow).toBe("xlsxParse");
@@ -152,11 +151,9 @@ describe("file-tools E2E", () => {
       parsePdf: vi.fn().mockResolvedValue(mockPages),
     });
 
-    const result = await runAgent(
-      { message: "pdfParse", source: "web" },
-      context,
-      { runId: "run-pdf-parse" },
-    );
+    const result = (await runAgent({ message: "pdfParse", source: "web" }, context, {
+      runId: "run-pdf-parse",
+    })) as AgentRunResult;
 
     expect(result.runId).toBe("run-pdf-parse");
     expect(result.workflow).toBe("pdfParse");
@@ -180,11 +177,9 @@ describe("file-tools E2E", () => {
       storeFileBuffer: vi.fn().mockResolvedValue("generated/output.xlsx"),
     });
 
-    const result = await runAgent(
-      { message: "xlsxCreate", source: "web" },
-      context,
-      { runId: "run-xlsx-create" },
-    );
+    const result = (await runAgent({ message: "xlsxCreate", source: "web" }, context, {
+      runId: "run-xlsx-create",
+    })) as AgentRunResult;
 
     expect(result.runId).toBe("run-xlsx-create");
     expect(result.workflow).toBe("xlsxCreate");
@@ -211,11 +206,9 @@ describe("file-tools E2E", () => {
       storeFileBuffer: vi.fn().mockResolvedValue("generated/chart.png"),
     });
 
-    const result = await runAgent(
-      { message: "chartCreate", source: "web" },
-      context,
-      { runId: "run-chart-create" },
-    );
+    const result = (await runAgent({ message: "chartCreate", source: "web" }, context, {
+      runId: "run-chart-create",
+    })) as AgentRunResult;
 
     expect(result.runId).toBe("run-chart-create");
     expect(result.workflow).toBe("chartCreate");

@@ -13,6 +13,11 @@ export const saveMemoryTool = (saveMemory: SaveMemoryFn) =>
     }),
     execute: async ({ title, content }) => {
       const result = await saveMemory({ title, content });
-      return { workflow: "saveMemory" as const, success: true, id: result.id, message: `「${title}」をメモリに保存しました` };
+      return {
+        workflow: "saveMemory" as const,
+        success: true,
+        id: result.id,
+        message: `「${title}」をメモリに保存しました`,
+      };
     },
   });

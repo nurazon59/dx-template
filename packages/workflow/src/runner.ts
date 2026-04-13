@@ -1,22 +1,31 @@
-import type { Job, StepEntry } from "./types.js";
+import type { Job, PendingApprovalData, StepEntry } from "./types.js";
 import { Suspend } from "./types.js";
 
 const jobs = new Map<string, Job>();
 
 export const jobStore = {
   create: (job: Job) => {
-    jobs.set(job.jobId, job);
+    const now = new Date().toISOString();
+    jobs.set(job.jobId, {
+      ...job,
+      createdAt: job.createdAt || now,
+      updatedAt: job.updatedAt || now,
+    });
   },
   get: (jobId: string) => jobs.get(jobId) ?? null,
   updateStep: (jobId: string, step: string) => {
     const job = jobs.get(jobId);
-    if (job) job.currentStep = step;
+    if (job) {
+      job.currentStep = step;
+      job.updatedAt = new Date().toISOString();
+    }
   },
   complete: (jobId: string, result: unknown) => {
     const job = jobs.get(jobId);
     if (job) {
       job.status = "done";
       job.result = result;
+      job.updatedAt = new Date().toISOString();
     }
   },
   fail: (jobId: string, error: string) => {
@@ -24,6 +33,7 @@ export const jobStore = {
     if (job) {
       job.status = "failed";
       job.error = error;
+      job.updatedAt = new Date().toISOString();
     }
   },
   suspend: (jobId: string, stepIndex: number, ctx: unknown) => {
@@ -32,7 +42,27 @@ export const jobStore = {
       job.status = "suspended";
       job.suspendedStepIndex = stepIndex;
       job.suspendedCtx = ctx;
+      job.updatedAt = new Date().toISOString();
     }
+  },
+  setPendingApproval: (jobId: string, data: PendingApprovalData) => {
+    const job = jobs.get(jobId);
+    if (job) {
+      job.status = "pending-approval";
+      job.pendingApproval = data;
+      job.updatedAt = new Date().toISOString();
+    }
+  },
+  clearPendingApproval: (jobId: string) => {
+    const job = jobs.get(jobId);
+    if (job) {
+      job.status = "running";
+      job.pendingApproval = undefined;
+      job.updatedAt = new Date().toISOString();
+    }
+  },
+  listByStatus: (status: Job["status"]) => {
+    return Array.from(jobs.values()).filter((job) => job.status === status);
   },
 };
 

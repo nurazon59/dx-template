@@ -40,6 +40,18 @@ export class ApiError extends Error {
   }
 }
 
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await globalThis.fetch(`${env.SERVER_URL}${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw toApiError(body, response);
+  }
+  return response.json() as Promise<T>;
+}
+
 export const apiClient = {
   system: {
     time: async () => {
@@ -116,5 +128,22 @@ export const apiClient = {
       }
       return data;
     },
+  },
+  hitl: {
+    listPending: () =>
+      fetchJson<{
+        jobs: Array<{
+          jobId: string;
+          approvalId: string;
+          toolName: string;
+          toolArgs: unknown;
+          createdAt: string;
+        }>;
+      }>("/api/hitl/pending"),
+    resolve: (jobId: string, input: { approved: boolean; reason?: string }) =>
+      fetchJson<{ message: string }>(`/api/hitl/pending/${jobId}/resolve`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
   },
 };

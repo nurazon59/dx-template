@@ -11,12 +11,15 @@ describe("createRunner", () => {
     ];
 
     const jobId = crypto.randomUUID();
+    const now = new Date().toISOString();
     jobStore.create({
       jobId,
       workflowType: "test",
       status: "running",
       currentStep: "",
       payload: { initial: true },
+      createdAt: now,
+      updatedAt: now,
     });
 
     const result = await createRunner(steps)(jobId, { initial: true });
@@ -48,12 +51,15 @@ describe("createRunner", () => {
     ];
 
     const jobId = crypto.randomUUID();
+    const now = new Date().toISOString();
     jobStore.create({
       jobId,
       workflowType: "test",
       status: "running",
       currentStep: "",
       payload: { initial: true },
+      createdAt: now,
+      updatedAt: now,
     });
 
     const run = createRunner(steps);

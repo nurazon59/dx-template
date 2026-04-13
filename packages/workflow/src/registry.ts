@@ -26,12 +26,15 @@ export const dispatch = async (
   context?: WorkflowContext,
 ): Promise<{ jobId: string }> => {
   const jobId = crypto.randomUUID();
+  const now = new Date().toISOString();
   jobStore.create({
     jobId,
     workflowType: type,
     status: "running",
     currentStep: "",
     payload,
+    createdAt: now,
+    updatedAt: now,
   });
   const workflow = workflowRegistry[type];
   await (
