@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  getApiFilesByObjectKeyDownload,
   getGetApiFilesQueryKey,
   useDeleteApiFilesByObjectKey,
   useGetApiFilesSuspense,
@@ -12,6 +11,7 @@ import { uploadFile } from "../lib/uploads";
 import { DeleteFileDialog } from "../features/files/components/DeleteFileDialog";
 import { DropZone } from "../features/files/components/DropZone";
 import { FileCard } from "../features/files/components/FileCard";
+import { FileViewerDialog } from "../features/files/components/FileViewerDialog";
 
 export const Route = createFileRoute("/_authenticated/files")({
   component: FilesPage,
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/files")({
 
 function FilesPage() {
   const { data: response } = useGetApiFilesSuspense();
-  const files = response.data.files;
+  const files = response?.data?.files ?? [];
 
   const queryClient = useQueryClient();
   const deleteMutation = useDeleteApiFilesByObjectKey();
@@ -27,6 +27,11 @@ function FilesPage() {
   const [deleteTarget, setDeleteTarget] = useState<{
     objectKey: string;
     fileName: string;
+  } | null>(null);
+  const [previewTarget, setPreviewTarget] = useState<{
+    objectKey: string;
+    fileName: string;
+    contentType: string;
   } | null>(null);
 
   const handleUpload = async (fileList: FileList) => {
@@ -55,11 +60,8 @@ function FilesPage() {
     setDeleteTarget(null);
   };
 
-  const handlePreview = async (objectKey: string) => {
-    const result = await getApiFilesByObjectKeyDownload(encodeURIComponent(objectKey));
-    if (result.status === 200) {
-      window.open(result.data.download.downloadUrl, "_blank");
-    }
+  const handlePreview = (file: { objectKey: string; fileName: string; contentType: string }) => {
+    setPreviewTarget(file);
   };
 
   return (
@@ -89,7 +91,13 @@ function FilesPage() {
                 contentType={file.contentType}
                 contentLength={file.contentLength}
                 createdAt={file.createdAt}
-                onPreview={() => void handlePreview(file.objectKey)}
+                onPreview={() =>
+                  handlePreview({
+                    objectKey: file.objectKey,
+                    fileName: file.fileName,
+                    contentType: file.contentType,
+                  })
+                }
                 onDelete={() =>
                   setDeleteTarget({ objectKey: file.objectKey, fileName: file.fileName })
                 }
@@ -104,6 +112,14 @@ function FilesPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirm}
         fileName={deleteTarget?.fileName ?? ""}
+      />
+
+      <FileViewerDialog
+        open={previewTarget !== null}
+        onClose={() => setPreviewTarget(null)}
+        fileName={previewTarget?.fileName ?? ""}
+        contentType={previewTarget?.contentType ?? ""}
+        objectKey={previewTarget?.objectKey ?? ""}
       />
     </Container>
   );
