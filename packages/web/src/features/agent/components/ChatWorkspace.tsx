@@ -10,6 +10,7 @@ import {
   Text,
   Textarea,
 } from "@chakra-ui/react";
+import { Folder, Paperclip } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,8 +20,8 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod/v4";
 import { ChatMessageBubble } from "./ChatMessageBubble";
-import { FileLibrarySelect } from "./FileLibrarySelect";
-import { FilePreviewList } from "./FilePreviewList";
+import { FileLibrarySelect } from "../../files/components/FileLibrarySelect";
+import { FilePreviewList } from "../../files/components/FilePreviewList";
 import { useFileUpload, buildMessageWithFiles } from "../hooks/useFileUpload";
 
 const defaultModels = {
@@ -150,97 +151,100 @@ export function ChatWorkspace({ conversationId, initialMessages }: ChatWorkspace
       )}
 
       <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap={3}>
-          <HStack align="flex-end" gap={3}>
-            <Box flex="0 0 160px">
-              <Field.Root>
-                <Field.Label fontSize="sm" color="fg.muted" mb={1}>
-                  Provider
-                </Field.Label>
-                <NativeSelect.Root>
-                  <NativeSelect.Field value={provider} onChange={handleProviderChange}>
-                    <option value="openai">OpenAI</option>
-                    <option value="google">Gemini</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              </Field.Root>
+        <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
+          {/* 添付プレビュー */}
+          {(selectedFiles.length > 0 || libraryFiles.length > 0) && (
+            <Box px={3} pt={3}>
+              <FilePreviewList files={selectedFiles} uploading={uploading} onRemove={removeFile} />
+              {libraryFiles.length > 0 && (
+                <HStack gap={2} flexWrap="wrap" mt={selectedFiles.length > 0 ? 2 : 0}>
+                  {libraryFiles.map((f) => (
+                    <HStack
+                      key={f.objectKey}
+                      px={2}
+                      py={1}
+                      bg="blue.50"
+                      borderRadius="md"
+                      fontSize="sm"
+                      gap={1}
+                    >
+                      <Folder size={14} />
+                      <Text>{f.fileName}</Text>
+                    </HStack>
+                  ))}
+                </HStack>
+              )}
             </Box>
-            <Box flex="1">
-              <Field.Root>
-                <Field.Label fontSize="sm" color="fg.muted" mb={1}>
-                  Model
-                </Field.Label>
-                <Input
-                  value={model}
-                  onChange={(e) => void setModel(e.currentTarget.value)}
-                  placeholder={defaultModels[provider]}
-                />
-              </Field.Root>
-            </Box>
-          </HStack>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".xlsx,.pdf,.jpg,.jpeg,.png,.webp"
-            hidden
-            onChange={(e) => {
-              if (e.target.files) addFiles(e.target.files);
-            }}
-          />
-          <FilePreviewList files={selectedFiles} uploading={uploading} onRemove={removeFile} />
-          {libraryFiles.length > 0 && (
-            <HStack gap={2} flexWrap="wrap">
-              {libraryFiles.map((f) => (
-                <Box key={f.objectKey} px={2} py={1} bg="blue.50" borderRadius="md" fontSize="sm">
-                  📁 {f.fileName}
-                </Box>
-              ))}
-            </HStack>
           )}
-          <Field.Root invalid={!!errors.message}>
-            <HStack align="flex-start" gap={2}>
-              <HStack gap={0} mt={2}>
-                <IconButton
-                  aria-label="ファイルを添付"
-                  variant="ghost"
-                  size="sm"
-                  onClick={openFilePicker}
-                  disabled={isSending || uploading}
-                >
-                  📎
-                </IconButton>
-                <FileLibrarySelect onSelect={setLibraryFiles} disabled={isSending || uploading} />
-              </HStack>
-              <Box flex="1">
-                <Textarea
-                  {...register("message")}
-                  placeholder="依頼内容を入力"
-                  autoresize
-                  minH="96px"
-                  disabled={isSending}
-                />
-              </Box>
+
+          {/* テキストエリア */}
+          <Box px={3} pt={3}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".xlsx,.pdf,.jpg,.jpeg,.png,.webp"
+              hidden
+              onChange={(e) => {
+                if (e.target.files) addFiles(e.target.files);
+              }}
+            />
+            <Field.Root invalid={!!errors.message}>
+              <Textarea
+                {...register("message")}
+                placeholder="依頼内容を入力"
+                autoresize
+                minH="80px"
+                variant="flushed"
+                border="none"
+                _focus={{ boxShadow: "none" }}
+                disabled={isSending}
+              />
+              <Field.ErrorText>{errors.message?.message}</Field.ErrorText>
+            </Field.Root>
+          </Box>
+
+          {/* ツールバー */}
+          <HStack px={3} py={2} justify="space-between">
+            <HStack gap={0}>
+              <IconButton
+                aria-label="ファイルを添付"
+                variant="ghost"
+                size="sm"
+                onClick={openFilePicker}
+                disabled={isSending || uploading}
+              >
+                <Paperclip size={16} />
+              </IconButton>
+              <FileLibrarySelect onSelect={setLibraryFiles} disabled={isSending || uploading} />
             </HStack>
-            <Field.ErrorText>{errors.message?.message}</Field.ErrorText>
-          </Field.Root>
-          <HStack justify="space-between">
-            <Text color="fg.muted" fontSize="sm">
-              Enter で改行、送信ボタンで送信
-            </Text>
-            <HStack>
+
+            <HStack gap={2}>
+              <NativeSelect.Root size="sm" width="auto">
+                <NativeSelect.Field value={provider} onChange={handleProviderChange}>
+                  <option value="openai">OpenAI</option>
+                  <option value="google">Gemini</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+              <Input
+                size="sm"
+                width="160px"
+                value={model}
+                onChange={(e) => void setModel(e.currentTarget.value)}
+                placeholder={defaultModels[provider]}
+              />
               {isSending && (
-                <Button variant="outline" onClick={stop}>
+                <Button size="sm" variant="outline" onClick={stop}>
                   停止
                 </Button>
               )}
-              <Button type="submit" colorPalette="blue" loading={isSending}>
+              <Button type="submit" size="sm" colorPalette="blue" loading={isSending}>
                 送信
               </Button>
             </HStack>
           </HStack>
-        </Stack>
+        </Box>
       </Box>
     </Stack>
   );

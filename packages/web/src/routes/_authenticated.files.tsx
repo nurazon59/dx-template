@@ -1,33 +1,21 @@
-import { Box, Button, Container, Heading, IconButton, Stack, Table, Text } from "@chakra-ui/react";
+import { Box, Container, Heading, Stack, Text } from "@chakra-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   getApiFilesByObjectKeyDownload,
   getGetApiFilesQueryKey,
   useDeleteApiFilesByObjectKey,
   useGetApiFilesSuspense,
 } from "../lib/api/generated";
-import { authClient } from "../lib/auth";
 import { uploadFile } from "../lib/uploads";
+import { DeleteFileDialog } from "../features/files/components/DeleteFileDialog";
+import { DropZone } from "../features/files/components/DropZone";
+import { FileCard } from "../features/files/components/FileCard";
 
 export const Route = createFileRoute("/_authenticated/files")({
-  beforeLoad: async () => {
-    const { data } = await authClient.getSession();
-    if (!data?.user) {
-      throw redirect({ to: "/login" });
-    }
-    return { session: data };
-  },
   component: FilesPage,
 });
-
-function formatFileSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-  return `${(bytes / 1024).toFixed(1)} KB`;
-}
 
 function FilesPage() {
   const { data: response } = useGetApiFilesSuspense();
@@ -35,11 +23,14 @@ function FilesPage() {
 
   const queryClient = useQueryClient();
   const deleteMutation = useDeleteApiFilesByObjectKey();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    objectKey: string;
+    fileName: string;
+  } | null>(null);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files ?? []);
+  const handleUpload = async (fileList: FileList) => {
+    const selected = Array.from(fileList);
     if (selected.length === 0) return;
 
     setIsUploading(true);
@@ -48,21 +39,20 @@ function FilesPage() {
       await queryClient.invalidateQueries({ queryKey: getGetApiFilesQueryKey() });
     } finally {
       setIsUploading(false);
-      // 同一ファイルを再アップロードできるようリセット
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const handleDelete = (objectKey: string, fileName: string) => {
-    if (!window.confirm(`「${fileName}」を削除しますか？`)) return;
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
     deleteMutation.mutate(
-      { objectKey: encodeURIComponent(objectKey) },
+      { objectKey: encodeURIComponent(deleteTarget.objectKey) },
       {
         onSuccess: () => {
           void queryClient.invalidateQueries({ queryKey: getGetApiFilesQueryKey() });
         },
       },
     );
+    setDeleteTarget(null);
   };
 
   const handlePreview = async (objectKey: string) => {
@@ -82,82 +72,37 @@ function FilesPage() {
           </Text>
         </Box>
 
-        <Box>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".xlsx,.pdf,.jpg,.jpeg,.png,.webp"
-            style={{ display: "none" }}
-            onChange={(e) => void handleUpload(e)}
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            loading={isUploading}
-            loadingText="アップロード中..."
-          >
-            ファイルをアップロード
-          </Button>
-        </Box>
+        <DropZone
+          onFiles={(fl) => void handleUpload(fl)}
+          accept=".xlsx,.pdf,.jpg,.jpeg,.png,.webp"
+          uploading={isUploading}
+        />
 
         {files.length === 0 ? (
           <Text color="fg.muted">ファイルはまだありません</Text>
         ) : (
-          <Table.Root variant="outline">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>ファイル名</Table.ColumnHeader>
-                <Table.ColumnHeader>種別</Table.ColumnHeader>
-                <Table.ColumnHeader>サイズ</Table.ColumnHeader>
-                <Table.ColumnHeader>作成日</Table.ColumnHeader>
-                <Table.ColumnHeader />
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {files.map((file) => (
-                <Table.Row key={file.id}>
-                  <Table.Cell>
-                    <Button
-                      variant="plain"
-                      size="sm"
-                      p={0}
-                      height="auto"
-                      fontWeight="normal"
-                      onClick={() => void handlePreview(file.objectKey)}
-                    >
-                      {file.fileName}
-                    </Button>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text fontSize="sm" color="fg.muted">
-                      {file.contentType}
-                    </Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text fontSize="sm">{formatFileSize(file.contentLength)}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text fontSize="sm">
-                      {new Date(file.createdAt).toLocaleDateString("ja-JP")}
-                    </Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <IconButton
-                      aria-label="削除"
-                      size="sm"
-                      variant="ghost"
-                      colorPalette="red"
-                      onClick={() => handleDelete(file.objectKey, file.fileName)}
-                    >
-                      ✕
-                    </IconButton>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+          <Stack gap={3}>
+            {files.map((file) => (
+              <FileCard
+                key={file.id}
+                fileName={file.fileName}
+                contentType={file.contentType}
+                contentLength={file.contentLength}
+                createdAt={file.createdAt}
+                onPreview={() => void handlePreview(file.objectKey)}
+                onDelete={() => setDeleteTarget({ objectKey: file.objectKey, fileName: file.fileName })}
+              />
+            ))}
+          </Stack>
         )}
       </Stack>
+
+      <DeleteFileDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        fileName={deleteTarget?.fileName ?? ""}
+      />
     </Container>
   );
 }

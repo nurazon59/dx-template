@@ -1,4 +1,20 @@
-import { Box, Button, HStack, IconButton, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  CheckboxControl,
+  CheckboxHiddenInput,
+  CheckboxLabel,
+  CheckboxRoot,
+  HStack,
+  IconButton,
+  PopoverBody,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
+import { FolderOpen } from "lucide-react";
 import { useState } from "react";
 import { useGetApiFiles } from "../../../lib/api/generated";
 
@@ -32,32 +48,14 @@ export function FileLibrarySelect({ onSelect, disabled }: FileLibrarySelectProps
   };
 
   return (
-    <Box position="relative">
-      <IconButton
-        aria-label="ライブラリから選択"
-        variant="ghost"
-        size="sm"
-        onClick={() => setOpen((o) => !o)}
-        disabled={disabled}
-      >
-        📁
-      </IconButton>
-      {open && (
-        <Box
-          position="absolute"
-          bottom="100%"
-          left={0}
-          mb={1}
-          bg="white"
-          borderWidth="1px"
-          borderRadius="md"
-          shadow="md"
-          p={3}
-          zIndex={10}
-          minW="280px"
-          maxH="300px"
-          overflowY="auto"
-        >
+    <PopoverRoot open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "top-start" }}>
+      <PopoverTrigger asChild>
+        <IconButton aria-label="ライブラリから選択" variant="ghost" size="sm" disabled={disabled}>
+          <FolderOpen size={16} />
+        </IconButton>
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverBody>
           <Stack gap={2}>
             <Text fontWeight="medium" fontSize="sm">
               ファイルライブラリ
@@ -67,18 +65,27 @@ export function FileLibrarySelect({ onSelect, disabled }: FileLibrarySelectProps
                 ファイルがありません
               </Text>
             ) : (
-              files.map((file) => (
-                <HStack key={file.id} gap={2} as="label" cursor="pointer">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(file.objectKey)}
-                    onChange={() => toggleFile(file.objectKey)}
-                  />
-                  <Text fontSize="sm" truncate>
-                    {file.fileName}
-                  </Text>
-                </HStack>
-              ))
+              <Box maxH="240px" overflowY="auto">
+                <Stack gap={1}>
+                  {files.map((file) => (
+                    <CheckboxRoot
+                      key={file.id}
+                      checked={selected.has(file.objectKey)}
+                      onCheckedChange={() => toggleFile(file.objectKey)}
+                    >
+                      <CheckboxHiddenInput />
+                      <HStack gap={2} cursor="pointer">
+                        <CheckboxControl />
+                        <CheckboxLabel>
+                          <Text fontSize="sm" truncate>
+                            {file.fileName}
+                          </Text>
+                        </CheckboxLabel>
+                      </HStack>
+                    </CheckboxRoot>
+                  ))}
+                </Stack>
+              </Box>
             )}
             {files.length > 0 && (
               <Button
@@ -91,8 +98,8 @@ export function FileLibrarySelect({ onSelect, disabled }: FileLibrarySelectProps
               </Button>
             )}
           </Stack>
-        </Box>
-      )}
-    </Box>
+        </PopoverBody>
+      </PopoverContent>
+    </PopoverRoot>
   );
 }
