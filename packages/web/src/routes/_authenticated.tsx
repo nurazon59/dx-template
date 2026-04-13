@@ -34,6 +34,9 @@ function AuthenticatedLayout() {
             <Link to="/memories" style={{ fontSize: "0.875rem" }}>
               メモリ
             </Link>
+            <Link to="/metrics" style={{ fontSize: "0.875rem" }}>
+              メトリクス
+            </Link>
             <Link to="/users" style={{ fontSize: "0.875rem" }}>
               ユーザー
             </Link>

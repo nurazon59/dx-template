@@ -87,6 +87,55 @@ export interface AgentConversation {
   messages: AgentMessage[];
 }
 
+export interface AgentRunSummary {
+  totalRuns: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  avgDurationMs: number;
+  errorCount: number;
+}
+
+export type AgentRunRowToolTrace =
+  | {
+      toolName: string;
+      workflow: string;
+      input: unknown;
+      output: unknown;
+    }[]
+  | null;
+
+export interface AgentRunRow {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  conversationId: string | null;
+  userId: string | null;
+  source: string;
+  model: string;
+  provider: string | null;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  durationMs: number;
+  stepCount: number;
+  toolTrace: AgentRunRowToolTrace;
+  isError: boolean;
+  errorMessage: string | null;
+  finishedAt: string;
+}
+
+export interface ToolUsage {
+  toolName: string;
+  usageCount: number;
+}
+
+export interface DailyStat {
+  date: string;
+  runs: number;
+  totalTokens: number;
+  errorCount: number;
+}
+
 export interface File {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -350,6 +399,7 @@ export const PostApiAgentRuns200TraceToolsItemToolName = {
   createXlsx: "createXlsx",
   createChart: "createChart",
   searchFiles: "searchFiles",
+  saveMemory: "saveMemory",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItemWorkflow =
@@ -363,6 +413,7 @@ export const PostApiAgentRuns200TraceToolsItemWorkflow = {
   xlsxCreate: "xlsxCreate",
   chartCreate: "chartCreate",
   fileSearch: "fileSearch",
+  saveMemory: "saveMemory",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItem = {
@@ -421,6 +472,18 @@ export type PostApiAgentChatBody = {
   provider?: PostApiAgentChatBodyProvider;
   /** @minLength 1 */
   model?: string;
+};
+
+export type GetApiAgentMetricsRuns200 = {
+  runs: AgentRunRow[];
+};
+
+export type GetApiAgentMetricsToolUsage200 = {
+  tools: ToolUsage[];
+};
+
+export type GetApiAgentMetricsDaily200 = {
+  stats: DailyStat[];
 };
 
 export type GetApiFiles200 = {
@@ -1808,6 +1871,956 @@ export const usePostApiAgentChat = <TError = Error, TContext = unknown>(
 > => {
   return useMutation(getPostApiAgentChatMutationOptions(options), queryClient);
 };
+
+export type getApiAgentMetricsSummaryResponse200 = {
+  data: AgentRunSummary;
+  status: 200;
+};
+
+export type getApiAgentMetricsSummaryResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentMetricsSummaryResponseSuccess = getApiAgentMetricsSummaryResponse200 & {
+  headers: Headers;
+};
+export type getApiAgentMetricsSummaryResponseError = getApiAgentMetricsSummaryResponse401 & {
+  headers: Headers;
+};
+
+export type getApiAgentMetricsSummaryResponse =
+  | getApiAgentMetricsSummaryResponseSuccess
+  | getApiAgentMetricsSummaryResponseError;
+
+export const getGetApiAgentMetricsSummaryUrl = () => {
+  return `/api/agent/metrics/summary`;
+};
+
+export const getApiAgentMetricsSummary = async (
+  options?: RequestInit,
+): Promise<getApiAgentMetricsSummaryResponse> => {
+  const res = await fetch(getGetApiAgentMetricsSummaryUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentMetricsSummaryResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiAgentMetricsSummaryResponse;
+};
+
+export const getGetApiAgentMetricsSummaryQueryKey = () => {
+  return [`/api/agent/metrics/summary`] as const;
+};
+
+export const getGetApiAgentMetricsSummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsSummaryQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>> = ({
+    signal,
+  }) => getApiAgentMetricsSummary({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsSummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsSummary>>
+>;
+export type GetApiAgentMetricsSummaryQueryError = Error;
+
+export function useGetApiAgentMetricsSummary<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsSummary>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsSummary<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsSummary>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsSummary<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsSummary<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsSummaryQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentMetricsSummarySuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsSummaryQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>> = ({
+    signal,
+  }) => getApiAgentMetricsSummary({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsSummarySuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsSummary>>
+>;
+export type GetApiAgentMetricsSummarySuspenseQueryError = Error;
+
+export function useGetApiAgentMetricsSummarySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsSummarySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsSummarySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsSummarySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsSummary>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsSummary>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsSummarySuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAgentMetricsRunsResponse200 = {
+  data: GetApiAgentMetricsRuns200;
+  status: 200;
+};
+
+export type getApiAgentMetricsRunsResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentMetricsRunsResponseSuccess = getApiAgentMetricsRunsResponse200 & {
+  headers: Headers;
+};
+export type getApiAgentMetricsRunsResponseError = getApiAgentMetricsRunsResponse401 & {
+  headers: Headers;
+};
+
+export type getApiAgentMetricsRunsResponse =
+  | getApiAgentMetricsRunsResponseSuccess
+  | getApiAgentMetricsRunsResponseError;
+
+export const getGetApiAgentMetricsRunsUrl = () => {
+  return `/api/agent/metrics/runs`;
+};
+
+export const getApiAgentMetricsRuns = async (
+  options?: RequestInit,
+): Promise<getApiAgentMetricsRunsResponse> => {
+  const res = await fetch(getGetApiAgentMetricsRunsUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentMetricsRunsResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiAgentMetricsRunsResponse;
+};
+
+export const getGetApiAgentMetricsRunsQueryKey = () => {
+  return [`/api/agent/metrics/runs`] as const;
+};
+
+export const getGetApiAgentMetricsRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsRunsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>> = ({ signal }) =>
+    getApiAgentMetricsRuns({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsRuns>>
+>;
+export type GetApiAgentMetricsRunsQueryError = Error;
+
+export function useGetApiAgentMetricsRuns<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsRuns>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsRuns<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsRuns>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsRuns<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsRuns<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsRunsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentMetricsRunsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsRunsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>> = ({ signal }) =>
+    getApiAgentMetricsRuns({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsRunsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsRuns>>
+>;
+export type GetApiAgentMetricsRunsSuspenseQueryError = Error;
+
+export function useGetApiAgentMetricsRunsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsRunsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsRunsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsRunsSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsRuns>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsRuns>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsRunsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAgentMetricsToolUsageResponse200 = {
+  data: GetApiAgentMetricsToolUsage200;
+  status: 200;
+};
+
+export type getApiAgentMetricsToolUsageResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentMetricsToolUsageResponseSuccess = getApiAgentMetricsToolUsageResponse200 & {
+  headers: Headers;
+};
+export type getApiAgentMetricsToolUsageResponseError = getApiAgentMetricsToolUsageResponse401 & {
+  headers: Headers;
+};
+
+export type getApiAgentMetricsToolUsageResponse =
+  | getApiAgentMetricsToolUsageResponseSuccess
+  | getApiAgentMetricsToolUsageResponseError;
+
+export const getGetApiAgentMetricsToolUsageUrl = () => {
+  return `/api/agent/metrics/tool-usage`;
+};
+
+export const getApiAgentMetricsToolUsage = async (
+  options?: RequestInit,
+): Promise<getApiAgentMetricsToolUsageResponse> => {
+  const res = await fetch(getGetApiAgentMetricsToolUsageUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentMetricsToolUsageResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiAgentMetricsToolUsageResponse;
+};
+
+export const getGetApiAgentMetricsToolUsageQueryKey = () => {
+  return [`/api/agent/metrics/tool-usage`] as const;
+};
+
+export const getGetApiAgentMetricsToolUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsToolUsageQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>> = ({
+    signal,
+  }) => getApiAgentMetricsToolUsage({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsToolUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>
+>;
+export type GetApiAgentMetricsToolUsageQueryError = Error;
+
+export function useGetApiAgentMetricsToolUsage<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsToolUsage<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsToolUsage<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsToolUsage<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsToolUsageQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentMetricsToolUsageSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsToolUsageQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>> = ({
+    signal,
+  }) => getApiAgentMetricsToolUsage({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsToolUsageSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>
+>;
+export type GetApiAgentMetricsToolUsageSuspenseQueryError = Error;
+
+export function useGetApiAgentMetricsToolUsageSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsToolUsageSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsToolUsageSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsToolUsageSuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getApiAgentMetricsToolUsage>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsToolUsageSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAgentMetricsDailyResponse200 = {
+  data: GetApiAgentMetricsDaily200;
+  status: 200;
+};
+
+export type getApiAgentMetricsDailyResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiAgentMetricsDailyResponseSuccess = getApiAgentMetricsDailyResponse200 & {
+  headers: Headers;
+};
+export type getApiAgentMetricsDailyResponseError = getApiAgentMetricsDailyResponse401 & {
+  headers: Headers;
+};
+
+export type getApiAgentMetricsDailyResponse =
+  | getApiAgentMetricsDailyResponseSuccess
+  | getApiAgentMetricsDailyResponseError;
+
+export const getGetApiAgentMetricsDailyUrl = () => {
+  return `/api/agent/metrics/daily`;
+};
+
+export const getApiAgentMetricsDaily = async (
+  options?: RequestInit,
+): Promise<getApiAgentMetricsDailyResponse> => {
+  const res = await fetch(getGetApiAgentMetricsDailyUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiAgentMetricsDailyResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiAgentMetricsDailyResponse;
+};
+
+export const getGetApiAgentMetricsDailyQueryKey = () => {
+  return [`/api/agent/metrics/daily`] as const;
+};
+
+export const getGetApiAgentMetricsDailyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsDailyQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>> = ({
+    signal,
+  }) => getApiAgentMetricsDaily({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsDailyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsDaily>>
+>;
+export type GetApiAgentMetricsDailyQueryError = Error;
+
+export function useGetApiAgentMetricsDaily<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsDaily>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsDaily<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+          TError,
+          Awaited<ReturnType<typeof getApiAgentMetricsDaily>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsDaily<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsDaily<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsDailyQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAgentMetricsDailySuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiAgentMetricsDailyQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>> = ({
+    signal,
+  }) => getApiAgentMetricsDaily({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAgentMetricsDailySuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAgentMetricsDaily>>
+>;
+export type GetApiAgentMetricsDailySuspenseQueryError = Error;
+
+export function useGetApiAgentMetricsDailySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsDailySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAgentMetricsDailySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiAgentMetricsDailySuspense<
+  TData = Awaited<ReturnType<typeof getApiAgentMetricsDaily>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiAgentMetricsDaily>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAgentMetricsDailySuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 export type getApiFilesResponse200 = {
   data: GetApiFiles200;

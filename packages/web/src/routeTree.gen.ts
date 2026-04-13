@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated.users'
+import { Route as AuthenticatedMetricsRouteImport } from './routes/_authenticated.metrics'
 import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated.memories'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated.files'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated.agents'
@@ -35,6 +36,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMetricsRoute = AuthenticatedMetricsRouteImport.update({
+  id: '/metrics',
+  path: '/metrics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AuthenticatedAgentsRoute
   '/files': typeof AuthenticatedFilesRoute
   '/memories': typeof AuthenticatedMemoriesRoute
+  '/metrics': typeof AuthenticatedMetricsRoute
   '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesByTo {
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/agents': typeof AuthenticatedAgentsRoute
   '/files': typeof AuthenticatedFilesRoute
   '/memories': typeof AuthenticatedMemoriesRoute
+  '/metrics': typeof AuthenticatedMetricsRoute
   '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesById {
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/memories': typeof AuthenticatedMemoriesRoute
+  '/_authenticated/metrics': typeof AuthenticatedMetricsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRouteTypes {
@@ -95,9 +104,18 @@ export interface FileRouteTypes {
     | '/agents'
     | '/files'
     | '/memories'
+    | '/metrics'
     | '/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/agents' | '/files' | '/memories' | '/users'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/agents'
+    | '/files'
+    | '/memories'
+    | '/metrics'
+    | '/users'
   id:
     | '__root__'
     | '/_authenticated'
@@ -107,6 +125,7 @@ export interface FileRouteTypes {
     | '/_authenticated/agents'
     | '/_authenticated/files'
     | '/_authenticated/memories'
+    | '/_authenticated/metrics'
     | '/_authenticated/users'
   fileRoutesById: FileRoutesById
 }
@@ -146,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/metrics': {
+      id: '/_authenticated/metrics'
+      path: '/metrics'
+      fullPath: '/metrics'
+      preLoaderRoute: typeof AuthenticatedMetricsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/memories': {
       id: '/_authenticated/memories'
       path: '/memories'
@@ -182,6 +208,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedMemoriesRoute: typeof AuthenticatedMemoriesRoute
+  AuthenticatedMetricsRoute: typeof AuthenticatedMetricsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
 }
 
@@ -190,6 +217,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedMemoriesRoute: AuthenticatedMemoriesRoute,
+  AuthenticatedMetricsRoute: AuthenticatedMetricsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
 }
 

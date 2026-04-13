@@ -32,6 +32,10 @@ vi.mock("../repositories/memories.js", () => ({
   insert: vi.fn(),
 }));
 
+vi.mock("../repositories/agent-runs.js", () => ({
+  insert: vi.fn(),
+}));
+
 import { app } from "../app.js";
 import { runAgent, streamAgentChat } from "@dx-template/agent";
 import { auth } from "../lib/auth.js";
@@ -200,6 +204,14 @@ describe("POST /api/agent/runs", () => {
           },
         ],
       },
+      metrics: {
+        inputTokens: 100,
+        outputTokens: 50,
+        totalTokens: 150,
+        durationMs: 500,
+        stepCount: 1,
+        model: "default",
+      },
     };
     mockRunAgent.mockResolvedValue(result);
 
@@ -328,6 +340,7 @@ describe("POST /api/agent/chat", () => {
       expect.objectContaining({ workflow: expect.any(Object) }),
       {
         onFinish: expect.any(Function),
+        onMetrics: expect.any(Function),
       },
     );
 

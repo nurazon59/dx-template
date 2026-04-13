@@ -90,6 +90,29 @@ export const memories = pgTable("memories", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const agentRuns = pgTable("agent_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: uuid("conversation_id").references(() => agentConversations.id, {
+    onDelete: "set null",
+  }),
+  userId: text("user_id").references(() => authUser.id, { onDelete: "set null" }),
+  source: text("source").notNull(),
+  model: text("model").notNull(),
+  provider: text("provider"),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  totalTokens: integer("total_tokens").notNull().default(0),
+  durationMs: integer("duration_ms").notNull().default(0),
+  stepCount: integer("step_count").notNull().default(0),
+  toolTrace:
+    jsonb("tool_trace").$type<
+      { toolName: string; workflow: string; input: unknown; output: unknown }[]
+    >(),
+  isError: boolean("is_error").notNull().default(false),
+  errorMessage: text("error_message"),
+  finishedAt: timestamp("finished_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const files = pgTable("files", {
   id: uuid("id").primaryKey().defaultRandom(),
   objectKey: text("object_key").notNull().unique(),
