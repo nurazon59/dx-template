@@ -196,6 +196,20 @@ export interface FileDownloadUrl {
   expiresIn: number;
 }
 
+export interface PendingApprovalResponse {
+  jobId: string;
+  approvalId: string;
+  toolName: string;
+  toolArgs: unknown;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  createdAt: string;
+}
+
+export interface ResumeApprovalInput {
+  approved: boolean;
+  reason?: string;
+}
+
 export interface Memory {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -427,12 +441,22 @@ export type PostApiAgentRuns200Trace = {
   tools: PostApiAgentRuns200TraceToolsItem[];
 };
 
+export type PostApiAgentRuns200Metrics = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  durationMs: number;
+  stepCount: number;
+  model: string;
+};
+
 export type PostApiAgentRuns200 = {
   runId: string;
   workflow: PostApiAgentRuns200Workflow;
   message: string;
   result: PostApiAgentRuns200Result;
   trace: PostApiAgentRuns200Trace;
+  metrics: PostApiAgentRuns200Metrics;
 };
 
 export type PostApiAgentChatBodyMessagesItemRole =
@@ -500,6 +524,14 @@ export type PostApiFilesPresign201 = {
 
 export type GetApiFilesByObjectKeyDownload200 = {
   download: FileDownloadUrl;
+};
+
+export type GetApiHitlPending200 = {
+  jobs: PendingApprovalResponse[];
+};
+
+export type PostApiHitlPendingByJobIdResolve200 = {
+  message: string;
 };
 
 export type GetApiMemories200 = {
@@ -3513,6 +3545,609 @@ export function useGetApiFilesByObjectKeyDownloadSuspense<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export type getApiHitlPendingResponse200 = {
+  data: GetApiHitlPending200;
+  status: 200;
+};
+
+export type getApiHitlPendingResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiHitlPendingResponseSuccess = getApiHitlPendingResponse200 & {
+  headers: Headers;
+};
+export type getApiHitlPendingResponseError = getApiHitlPendingResponse401 & {
+  headers: Headers;
+};
+
+export type getApiHitlPendingResponse =
+  | getApiHitlPendingResponseSuccess
+  | getApiHitlPendingResponseError;
+
+export const getGetApiHitlPendingUrl = () => {
+  return `/api/hitl/pending`;
+};
+
+export const getApiHitlPending = async (
+  options?: RequestInit,
+): Promise<getApiHitlPendingResponse> => {
+  const res = await fetch(getGetApiHitlPendingUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiHitlPendingResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiHitlPendingResponse;
+};
+
+export const getGetApiHitlPendingQueryKey = () => {
+  return [`/api/hitl/pending`] as const;
+};
+
+export const getGetApiHitlPendingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>>;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiHitlPendingQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiHitlPending>>> = ({ signal }) =>
+    getApiHitlPending({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiHitlPending>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiHitlPendingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiHitlPending>>
+>;
+export type GetApiHitlPendingQueryError = Error;
+
+export function useGetApiHitlPending<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiHitlPending>>,
+          TError,
+          Awaited<ReturnType<typeof getApiHitlPending>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPending<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiHitlPending>>,
+          TError,
+          Awaited<ReturnType<typeof getApiHitlPending>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPending<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiHitlPending<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiHitlPendingQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiHitlPendingSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiHitlPendingQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiHitlPending>>> = ({ signal }) =>
+    getApiHitlPending({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiHitlPending>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiHitlPendingSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiHitlPending>>
+>;
+export type GetApiHitlPendingSuspenseQueryError = Error;
+
+export function useGetApiHitlPendingSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiHitlPendingSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPending>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPending>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiHitlPendingSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiHitlPendingByJobIdResponse200 = {
+  data: PendingApprovalResponse;
+  status: 200;
+};
+
+export type getApiHitlPendingByJobIdResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiHitlPendingByJobIdResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type getApiHitlPendingByJobIdResponseSuccess = getApiHitlPendingByJobIdResponse200 & {
+  headers: Headers;
+};
+export type getApiHitlPendingByJobIdResponseError = (
+  | getApiHitlPendingByJobIdResponse401
+  | getApiHitlPendingByJobIdResponse404
+) & {
+  headers: Headers;
+};
+
+export type getApiHitlPendingByJobIdResponse =
+  | getApiHitlPendingByJobIdResponseSuccess
+  | getApiHitlPendingByJobIdResponseError;
+
+export const getGetApiHitlPendingByJobIdUrl = (jobId: string) => {
+  return `/api/hitl/pending/${jobId}`;
+};
+
+export const getApiHitlPendingByJobId = async (
+  jobId: string,
+  options?: RequestInit,
+): Promise<getApiHitlPendingByJobIdResponse> => {
+  const res = await fetch(getGetApiHitlPendingByJobIdUrl(jobId), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiHitlPendingByJobIdResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiHitlPendingByJobIdResponse;
+};
+
+export const getGetApiHitlPendingByJobIdQueryKey = (jobId: string) => {
+  return [`/api/hitl/pending/${jobId}`] as const;
+};
+
+export const getGetApiHitlPendingByJobIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiHitlPendingByJobIdQueryKey(jobId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>> = ({
+    signal,
+  }) => getApiHitlPendingByJobId(jobId, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, enabled: !!jobId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiHitlPendingByJobIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiHitlPendingByJobId>>
+>;
+export type GetApiHitlPendingByJobIdQueryError = Error;
+
+export function useGetApiHitlPendingByJobId<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiHitlPendingByJobId>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingByJobId<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiHitlPendingByJobId>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingByJobId<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiHitlPendingByJobId<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiHitlPendingByJobIdQueryOptions(jobId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiHitlPendingByJobIdSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiHitlPendingByJobIdQueryKey(jobId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>> = ({
+    signal,
+  }) => getApiHitlPendingByJobId(jobId, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiHitlPendingByJobIdSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiHitlPendingByJobId>>
+>;
+export type GetApiHitlPendingByJobIdSuspenseQueryError = Error;
+
+export function useGetApiHitlPendingByJobIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingByJobIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiHitlPendingByJobIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiHitlPendingByJobIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiHitlPendingByJobId>>,
+  TError = Error,
+>(
+  jobId: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiHitlPendingByJobId>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiHitlPendingByJobIdSuspenseQueryOptions(jobId, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type postApiHitlPendingByJobIdResolveResponse200 = {
+  data: PostApiHitlPendingByJobIdResolve200;
+  status: 200;
+};
+
+export type postApiHitlPendingByJobIdResolveResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiHitlPendingByJobIdResolveResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiHitlPendingByJobIdResolveResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type postApiHitlPendingByJobIdResolveResponseSuccess =
+  postApiHitlPendingByJobIdResolveResponse200 & {
+    headers: Headers;
+  };
+export type postApiHitlPendingByJobIdResolveResponseError = (
+  | postApiHitlPendingByJobIdResolveResponse400
+  | postApiHitlPendingByJobIdResolveResponse401
+  | postApiHitlPendingByJobIdResolveResponse404
+) & {
+  headers: Headers;
+};
+
+export type postApiHitlPendingByJobIdResolveResponse =
+  | postApiHitlPendingByJobIdResolveResponseSuccess
+  | postApiHitlPendingByJobIdResolveResponseError;
+
+export const getPostApiHitlPendingByJobIdResolveUrl = (jobId: string) => {
+  return `/api/hitl/pending/${jobId}/resolve`;
+};
+
+export const postApiHitlPendingByJobIdResolve = async (
+  jobId: string,
+  resumeApprovalInput: ResumeApprovalInput,
+  options?: RequestInit,
+): Promise<postApiHitlPendingByJobIdResolveResponse> => {
+  const res = await fetch(getPostApiHitlPendingByJobIdResolveUrl(jobId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(resumeApprovalInput),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiHitlPendingByJobIdResolveResponse["data"] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postApiHitlPendingByJobIdResolveResponse;
+};
+
+export const getPostApiHitlPendingByJobIdResolveMutationOptions = <
+  TError = Error,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>,
+    TError,
+    { jobId: string; data: ResumeApprovalInput },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>,
+  TError,
+  { jobId: string; data: ResumeApprovalInput },
+  TContext
+> => {
+  const mutationKey = ["postApiHitlPendingByJobIdResolve"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>,
+    { jobId: string; data: ResumeApprovalInput }
+  > = (props) => {
+    const { jobId, data } = props ?? {};
+
+    return postApiHitlPendingByJobIdResolve(jobId, data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiHitlPendingByJobIdResolveMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>
+>;
+export type PostApiHitlPendingByJobIdResolveMutationBody = ResumeApprovalInput;
+export type PostApiHitlPendingByJobIdResolveMutationError = Error;
+
+export const usePostApiHitlPendingByJobIdResolve = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>,
+      TError,
+      { jobId: string; data: ResumeApprovalInput },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiHitlPendingByJobIdResolve>>,
+  TError,
+  { jobId: string; data: ResumeApprovalInput },
+  TContext
+> => {
+  return useMutation(getPostApiHitlPendingByJobIdResolveMutationOptions(options), queryClient);
+};
 
 export type getApiMemoriesResponse200 = {
   data: GetApiMemories200;

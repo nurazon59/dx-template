@@ -4,1280 +4,1670 @@
  */
 
 export interface paths {
-  "/api/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiHealth"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/time": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiTime"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiTime"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiMe"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/agent/conversations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentConversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiAgentConversations"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/agent/conversations/{conversationId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/conversations/{conversationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentConversationsByConversationId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiAgentConversationsByConversationId"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/agent/runs": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["postApiAgentRuns"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations["postApiAgentRuns"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/agent/chat": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["postApiAgentChat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations["postApiAgentChat"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/files": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/metrics/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentMetricsSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiFiles"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/files/{objectKey}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/metrics/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentMetricsRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: operations["deleteApiFilesByObjectKey"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/files/presign": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/metrics/tool-usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentMetricsToolUsage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations["postApiFilesPresign"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/files/{objectKey}/download": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/agent/metrics/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiAgentMetricsDaily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiFilesByObjectKeyDownload"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/memories": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiFiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiMemories"];
-    put?: never;
-    post: operations["postApiMemories"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/memories/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/files/{objectKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteApiFilesByObjectKey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiMemoriesById"];
-    put: operations["putApiMemoriesById"];
-    post?: never;
-    delete: operations["deleteApiMemoriesById"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/uploads/images/presign": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/files/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["postApiFilesPresign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations["postApiUploadsImagesPresign"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/files/{objectKey}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiFilesByObjectKeyDownload"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiUsers"];
-    put?: never;
-    post: operations["postApiUsers"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/users/{slackUserId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/hitl/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiHitlPending"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["getApiUsersBySlackUserId"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/api/hitl/pending/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiHitlPendingByJobId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/hitl/pending/{jobId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["postApiHitlPendingByJobIdResolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/memories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiMemories"];
+        put?: never;
+        post: operations["postApiMemories"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/memories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiMemoriesById"];
+        put: operations["putApiMemoriesById"];
+        post?: never;
+        delete: operations["deleteApiMemoriesById"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/uploads/images/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["postApiUploadsImagesPresign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiUsers"];
+        put?: never;
+        post: operations["postApiUsers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{slackUserId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApiUsersBySlackUserId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    AuthUser: {
-      id: string;
-      name: string;
-      /** Format: email */
-      email: string;
-      emailVerified: boolean;
-      image: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    Error: {
-      code: string;
-      message: string;
-    };
-    AgentConversationSummary: {
-      /** Format: uuid */
-      id: string;
-      title: string;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-      /** Format: date-time */
-      lastMessageAt: string;
-    };
-    AgentMessage: {
-      id: string;
-      /** @enum {string} */
-      role: "system" | "user" | "assistant";
-      parts: ({
-        type: string;
-      } & {
-        [key: string]: unknown;
-      })[];
-      /** Format: date-time */
-      createdAt: string;
-    };
-    AgentConversation: {
-      /** Format: uuid */
-      id: string;
-      title: string;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-      /** Format: date-time */
-      lastMessageAt: string;
-      messages: components["schemas"]["AgentMessage"][];
-    };
-    File: {
-      /** Format: uuid */
-      id: string;
-      objectKey: string;
-      fileName: string;
-      contentType: string;
-      contentLength: number;
-      /** Format: date-time */
-      createdAt: string;
-    };
-    FileUploadUrl: {
-      /** Format: uri */
-      uploadUrl: string;
-      objectKey: string;
-      expiresIn: number;
-    };
-    CreateFileUploadUrlInput: {
-      fileName: string;
-      /** @enum {string} */
-      contentType:
-        | "image/jpeg"
-        | "image/png"
-        | "image/webp"
-        | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        | "application/pdf";
-      contentLength: number;
-    };
-    FileDownloadUrl: {
-      /** Format: uri */
-      downloadUrl: string;
-      expiresIn: number;
-    };
-    Memory: {
-      /** Format: uuid */
-      id: string;
-      title: string;
-      content: string;
-      createdBy: string | null;
-      source: string;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    CreateMemoryInput: {
-      title: string;
-      content: string;
-      /** @enum {string} */
-      source: "web" | "slack" | "agent";
-    };
-    UpdateMemoryInput: {
-      title?: string;
-      content?: string;
-    };
-    ImageUploadUrl: {
-      /** Format: uri */
-      uploadUrl: string;
-      objectKey: string;
-      /** Format: uri */
-      publicUrl?: string;
-      expiresIn: number;
-    };
-    CreateImageUploadUrlInput: {
-      fileName: string;
-      /** @enum {string} */
-      contentType: "image/jpeg" | "image/png" | "image/webp";
-      contentLength: number;
-    };
-    User: {
-      /** Format: uuid */
-      id: string;
-      slackUserId: string;
-      displayName: string;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    CreateUserInput: {
-      slackUserId: string;
-      displayName: string;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
-}
-export type $defs = Record<string, never>;
-export interface operations {
-  getApiHealth: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description ヘルスチェック */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            /** @constant */
-            status: "ok";
-          };
-        };
-      };
-    };
-  };
-  getApiTime: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 現在時刻 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
+    schemas: {
+        AuthUser: {
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
+            emailVerified: boolean;
+            image: string | null;
             /** Format: date-time */
-            timestamp: string;
-          };
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
-      };
-    };
-  };
-  getApiMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 認証済みユーザー情報 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            user: components["schemas"]["AuthUser"];
-          };
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
-  getApiAgentConversations: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Agent conversation list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            conversations: components["schemas"]["AgentConversationSummary"][];
-          };
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
-  getApiAgentConversationsByConversationId: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        conversationId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Agent conversation */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            conversation: components["schemas"]["AgentConversation"];
-          };
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 会話が見つからない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
-  postApiAgentRuns: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          message: string;
-          actor?: {
-            userId?: string;
-            slackUserId?: string;
-          };
-          /** @enum {string} */
-          source: "web" | "slack";
-        };
-      };
-    };
-    responses: {
-      /** @description Agent run result */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            runId: string;
-            /** @enum {string} */
-            workflow:
-              | "triage"
-              | "reportDraft"
-              | "xlsxParse"
-              | "pdfParse"
-              | "xlsxCreate"
-              | "chartCreate";
+        Error: {
+            code: string;
             message: string;
-            result:
-              | {
-                  /** @constant */
-                  kind: "triage";
-                  /** @enum {string} */
-                  intent: "report" | "approval" | "general" | "unknown";
-                  summary: string;
-                  nextAction: string;
-                }
-              | {
-                  /** @constant */
-                  kind: "reportDraft";
-                  title: string;
-                  audience: string;
-                  summary: string;
-                  outline: string[];
-                  draft: string;
-                  nextAction: string;
-                }
-              | {
-                  /** @constant */
-                  kind: "xlsxParse";
-                  sheets: {
-                    name: string;
-                    headers: string[];
-                    rowCount: number;
-                    data: {
-                      [key: string]: unknown;
-                    }[];
-                  }[];
-                }
-              | {
-                  /** @constant */
-                  kind: "pdfParse";
-                  pageCount: number;
-                  pages: {
-                    pageNumber: number;
-                    text: string;
-                  }[];
-                }
-              | {
-                  /** @constant */
-                  kind: "xlsxCreate";
-                  objectKey: string;
-                  downloadUrl: string;
-                }
-              | {
-                  /** @constant */
-                  kind: "chartCreate";
-                  objectKey: string;
-                  downloadUrl: string;
-                };
-            trace: {
-              tools: {
-                /** @enum {string} */
-                toolName:
-                  | "runTriage"
-                  | "createReportDraft"
-                  | "parseXlsx"
-                  | "parsePdf"
-                  | "createXlsx"
-                  | "createChart"
-                  | "searchFiles";
-                /** @enum {string} */
-                workflow:
-                  | "triage"
-                  | "reportDraft"
-                  | "xlsxParse"
-                  | "pdfParse"
-                  | "xlsxCreate"
-                  | "chartCreate"
-                  | "fileSearch";
-                input: unknown;
-                output: unknown;
-              }[];
-            };
-          };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
+        AgentConversationSummary: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            lastMessageAt: string;
         };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description Agent 実行エラー */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
-  postApiAgentChat: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          /** Format: uuid */
-          conversationId?: string;
-          messages: ({
-            id?: string;
+        AgentMessage: {
+            id: string;
             /** @enum {string} */
             role: "system" | "user" | "assistant";
             parts: ({
-              type: string;
+                type: string;
             } & {
-              [key: string]: unknown;
+                [key: string]: unknown;
             })[];
-          } & {
-            [key: string]: unknown;
-          })[];
-          /** @enum {string} */
-          provider?: "openai" | "google";
-          model?: string;
+            /** Format: date-time */
+            createdAt: string;
         };
-      };
+        AgentConversation: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            lastMessageAt: string;
+            messages: components["schemas"]["AgentMessage"][];
+        };
+        AgentRunSummary: {
+            totalRuns: number;
+            totalInputTokens: number;
+            totalOutputTokens: number;
+            totalTokens: number;
+            avgDurationMs: number;
+            errorCount: number;
+        };
+        AgentRunRow: {
+            /** Format: uuid */
+            id: string;
+            conversationId: string | null;
+            userId: string | null;
+            source: string;
+            model: string;
+            provider: string | null;
+            inputTokens: number;
+            outputTokens: number;
+            totalTokens: number;
+            durationMs: number;
+            stepCount: number;
+            toolTrace: {
+                toolName: string;
+                workflow: string;
+                input: unknown;
+                output: unknown;
+            }[] | null;
+            isError: boolean;
+            errorMessage: string | null;
+            finishedAt: string;
+        };
+        ToolUsage: {
+            toolName: string;
+            usageCount: number;
+        };
+        DailyStat: {
+            date: string;
+            runs: number;
+            totalTokens: number;
+            errorCount: number;
+        };
+        File: {
+            /** Format: uuid */
+            id: string;
+            objectKey: string;
+            fileName: string;
+            contentType: string;
+            contentLength: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        FileUploadUrl: {
+            /** Format: uri */
+            uploadUrl: string;
+            objectKey: string;
+            expiresIn: number;
+        };
+        CreateFileUploadUrlInput: {
+            fileName: string;
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" | "application/pdf";
+            contentLength: number;
+        };
+        FileDownloadUrl: {
+            /** Format: uri */
+            downloadUrl: string;
+            expiresIn: number;
+        };
+        PendingApprovalResponse: {
+            jobId: string;
+            approvalId: string;
+            toolName: string;
+            toolArgs: unknown;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ResumeApprovalInput: {
+            approved: boolean;
+            reason?: string;
+        };
+        Memory: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            content: string;
+            createdBy: string | null;
+            source: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateMemoryInput: {
+            title: string;
+            content: string;
+            /** @enum {string} */
+            source: "web" | "slack" | "agent";
+        };
+        UpdateMemoryInput: {
+            title?: string;
+            content?: string;
+        };
+        ImageUploadUrl: {
+            /** Format: uri */
+            uploadUrl: string;
+            objectKey: string;
+            /** Format: uri */
+            publicUrl?: string;
+            expiresIn: number;
+        };
+        CreateImageUploadUrlInput: {
+            fileName: string;
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            contentLength: number;
+        };
+        User: {
+            /** Format: uuid */
+            id: string;
+            slackUserId: string;
+            displayName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateUserInput: {
+            slackUserId: string;
+            displayName: string;
+        };
     };
-    responses: {
-      /** @description Agent chat stream */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
+}
+export type $defs = Record<string, never>;
+export interface operations {
+    getApiHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "text/event-stream": string;
+        requestBody?: never;
+        responses: {
+            /** @description ヘルスチェック */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        status: "ok";
+                    };
+                };
+            };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description Agent 実行エラー */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  getApiFiles: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    getApiTime: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 現在時刻 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        timestamp: string;
+                    };
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description ユーザーのファイル一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            files: components["schemas"]["File"][];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description 認証済みユーザー情報 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        user: components["schemas"]["AuthUser"];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
     };
-  };
-  deleteApiFilesByObjectKey: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        objectKey: string;
-      };
-      cookie?: never;
+    getApiAgentConversations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Agent conversation list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        conversations: components["schemas"]["AgentConversationSummary"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description ファイル削除成功 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiAgentConversationsByConversationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            /** @constant */
-            success: true;
-          };
+        requestBody?: never;
+        responses: {
+            /** @description Agent conversation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        conversation: components["schemas"]["AgentConversation"];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 会話が見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
-      /** @description ファイルが存在しない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  postApiFilesPresign: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    postApiAgentRuns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    message: string;
+                    actor?: {
+                        userId?: string;
+                        slackUserId?: string;
+                    };
+                    /** @enum {string} */
+                    source: "web" | "slack";
+                };
+            };
+        };
+        responses: {
+            /** @description Agent run result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        runId: string;
+                        /** @enum {string} */
+                        workflow: "triage" | "reportDraft" | "xlsxParse" | "pdfParse" | "xlsxCreate" | "chartCreate";
+                        message: string;
+                        result: {
+                            /** @constant */
+                            kind: "triage";
+                            /** @enum {string} */
+                            intent: "report" | "approval" | "general" | "unknown";
+                            summary: string;
+                            nextAction: string;
+                        } | {
+                            /** @constant */
+                            kind: "reportDraft";
+                            title: string;
+                            audience: string;
+                            summary: string;
+                            outline: string[];
+                            draft: string;
+                            nextAction: string;
+                        } | {
+                            /** @constant */
+                            kind: "xlsxParse";
+                            sheets: {
+                                name: string;
+                                headers: string[];
+                                rowCount: number;
+                                data: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        } | {
+                            /** @constant */
+                            kind: "pdfParse";
+                            pageCount: number;
+                            pages: {
+                                pageNumber: number;
+                                text: string;
+                            }[];
+                        } | {
+                            /** @constant */
+                            kind: "xlsxCreate";
+                            objectKey: string;
+                            downloadUrl: string;
+                        } | {
+                            /** @constant */
+                            kind: "chartCreate";
+                            objectKey: string;
+                            downloadUrl: string;
+                        };
+                        trace: {
+                            tools: {
+                                /** @enum {string} */
+                                toolName: "runTriage" | "createReportDraft" | "parseXlsx" | "parsePdf" | "createXlsx" | "createChart" | "searchFiles" | "saveMemory";
+                                /** @enum {string} */
+                                workflow: "triage" | "reportDraft" | "xlsxParse" | "pdfParse" | "xlsxCreate" | "chartCreate" | "fileSearch" | "saveMemory";
+                                input: unknown;
+                                output: unknown;
+                            }[];
+                        };
+                        metrics: {
+                            inputTokens: number;
+                            outputTokens: number;
+                            totalTokens: number;
+                            durationMs: number;
+                            stepCount: number;
+                            model: string;
+                        };
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Agent 実行エラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateFileUploadUrlInput"];
-      };
+    postApiAgentChat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    conversationId?: string;
+                    messages: ({
+                        id?: string;
+                        /** @enum {string} */
+                        role: "system" | "user" | "assistant";
+                        parts: ({
+                            type: string;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    /** @enum {string} */
+                    provider?: "openai" | "google";
+                    model?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Agent chat stream */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Agent 実行エラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description ファイルアップロード用の署名付き URL を発行 */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    getApiAgentMetricsSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            upload: components["schemas"]["FileUploadUrl"];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description メトリクスサマリー */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunSummary"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description アップロード storage 設定不備 */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  getApiFilesByObjectKeyDownload: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        objectKey: string;
-      };
-      cookie?: never;
+    getApiAgentMetricsRuns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 直近の実行一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        runs: components["schemas"]["AgentRunRow"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description 署名付きダウンロード URL を発行 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiAgentMetricsToolUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            download: components["schemas"]["FileDownloadUrl"];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description ツール別使用回数 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        tools: components["schemas"]["ToolUsage"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description ダウンロード URL 発行エラー */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  getApiMemories: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    getApiAgentMetricsDaily: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 日別統計 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        stats: components["schemas"]["DailyStat"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description メモリ一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiFiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            memories: components["schemas"]["Memory"][];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description ユーザーのファイル一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        files: components["schemas"]["File"][];
+                    };
+                };
+            };
         };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  postApiMemories: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    deleteApiFilesByObjectKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                objectKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ファイル削除成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                    };
+                };
+            };
+            /** @description ファイルが存在しない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateMemoryInput"];
-      };
+    postApiFilesPresign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFileUploadUrlInput"];
+            };
+        };
+        responses: {
+            /** @description ファイルアップロード用の署名付き URL を発行 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        upload: components["schemas"]["FileUploadUrl"];
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description アップロード storage 設定不備 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description メモリ作成成功 */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    getApiFilesByObjectKeyDownload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                objectKey: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            memory: components["schemas"]["Memory"];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description 署名付きダウンロード URL を発行 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        download: components["schemas"]["FileDownloadUrl"];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ダウンロード URL 発行エラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  getApiMemoriesById: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
+    getApiHitlPending: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 承認待ちジョブ一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        jobs: components["schemas"]["PendingApprovalResponse"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description メモリ詳細 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiHitlPendingByJobId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            memory: components["schemas"]["Memory"];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description 承認待ちジョブ詳細 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingApprovalResponse"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ジョブが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description メモリが見つからない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  putApiMemoriesById: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
+    postApiHitlPendingByJobIdResolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeApprovalInput"];
+            };
+        };
+        responses: {
+            /** @description 承認/拒否の結果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ジョブが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateMemoryInput"];
-      };
+    getApiMemories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description メモリ一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        memories: components["schemas"]["Memory"][];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description メモリ更新成功 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    postApiMemories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            memory: components["schemas"]["Memory"];
-          };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMemoryInput"];
+            };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description メモリ作成成功 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        memory: components["schemas"]["Memory"];
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description メモリが見つからない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  deleteApiMemoriesById: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
+    getApiMemoriesById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description メモリ詳細 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        memory: components["schemas"]["Memory"];
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description メモリが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description メモリ削除成功 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    putApiMemoriesById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            /** @constant */
-            success: true;
-          };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMemoryInput"];
+            };
         };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description メモリ更新成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        memory: components["schemas"]["Memory"];
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description メモリが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description メモリが見つからない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  postApiUploadsImagesPresign: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    deleteApiMemoriesById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description メモリ削除成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                    };
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description メモリが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateImageUploadUrlInput"];
-      };
+    postApiUploadsImagesPresign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateImageUploadUrlInput"];
+            };
+        };
+        responses: {
+            /** @description 画像アップロード用の署名付き URL を発行 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        upload: components["schemas"]["ImageUploadUrl"];
+                    };
+                };
+            };
+            /** @description 入力値が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未認証 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description アップロード storage 設定不備 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description 画像アップロード用の署名付き URL を発行 */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    getApiUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            upload: components["schemas"]["ImageUploadUrl"];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description ユーザー一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        users: components["schemas"]["User"][];
+                    };
+                };
+            };
         };
-      };
-      /** @description 入力値が不正 */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description 未認証 */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-      /** @description アップロード storage 設定不備 */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
     };
-  };
-  getApiUsers: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    postApiUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserInput"];
+            };
+        };
+        responses: {
+            /** @description ユーザー作成成功 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        user: components["schemas"]["User"];
+                    };
+                };
+            };
+            /** @description ユーザー重複 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description ユーザー一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    getApiUsersBySlackUserId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slackUserId: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            users: components["schemas"]["User"][];
-          };
+        requestBody?: never;
+        responses: {
+            /** @description ユーザー取得 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        user: components["schemas"]["User"];
+                    };
+                };
+            };
+            /** @description ユーザーが見つからない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
-      };
     };
-  };
-  postApiUsers: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateUserInput"];
-      };
-    };
-    responses: {
-      /** @description ユーザー作成成功 */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            user: components["schemas"]["User"];
-          };
-        };
-      };
-      /** @description ユーザー重複 */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
-  getApiUsersBySlackUserId: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slackUserId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description ユーザー取得 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            user: components["schemas"]["User"];
-          };
-        };
-      };
-      /** @description ユーザーが見つからない */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Error"];
-        };
-      };
-    };
-  };
 }
