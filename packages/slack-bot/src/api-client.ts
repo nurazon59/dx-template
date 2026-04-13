@@ -81,4 +81,40 @@ export const apiClient = {
       return data;
     },
   },
+  memories: {
+    list: async () => {
+      const { data, error, response } = await client.GET("/api/memories");
+      if (error) {
+        throw toApiError(error, response);
+      }
+      return data;
+    },
+    getById: async (id: string) => {
+      const { data, error, response } = await client.GET("/api/memories/{id}", {
+        params: { path: { id } },
+      });
+      if (error) {
+        throw toApiError(error, response);
+      }
+      return data;
+    },
+    create: async (input: components["schemas"]["CreateMemoryInput"]) => {
+      const { data, error, response } = await client.POST("/api/memories", {
+        body: input,
+      });
+      if (error) {
+        throw toApiError(error, response);
+      }
+      return data;
+    },
+    delete: async (id: string) => {
+      const { data, error, response } = await client.DELETE("/api/memories/{id}", {
+        params: { path: { id } },
+      });
+      if (error) {
+        throw toApiError(error, response);
+      }
+      return data;
+    },
+  },
 };

@@ -59,6 +59,7 @@ export const AgentToolTraceSchema = z.object({
     "createXlsx",
     "createChart",
     "searchFiles",
+    "saveMemory",
   ]),
   workflow: z.enum([
     "triage",
@@ -68,6 +69,7 @@ export const AgentToolTraceSchema = z.object({
     "xlsxCreate",
     "chartCreate",
     "fileSearch",
+    "saveMemory",
   ]),
   input: z.unknown(),
   output: z.unknown(),

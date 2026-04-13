@@ -5,7 +5,9 @@ import {
   AgentChatInputSchema,
   AgentRunInputSchema,
   AgentRunResultSchema,
+  type AgentContext,
 } from "@dx-template/agent";
+import * as memoriesRepo from "../repositories/memories.js";
 import { Hono } from "hono";
 import { describeRoute, resolver, validator } from "hono-openapi";
 import { z } from "zod";
@@ -142,7 +144,20 @@ export const agentRoute = new Hono<Env>()
     async (c) => {
       const input = c.req.valid("json");
       const user = c.get("user")!;
-      const context = createWorkflowContext({ db: c.var.db, userId: user.id });
+      const workflow = createWorkflowContext({ db: c.var.db, userId: user.id });
+      const memoryRows = await memoriesRepo.listAll(c.var.db);
+      const agentContext: AgentContext = {
+        workflow,
+        memories: memoryRows.map((r) => ({ id: r.id, title: r.title, content: r.content })),
+        saveMemory: async (input) => {
+          const row = await memoriesRepo.insert(c.var.db, {
+            ...input,
+            source: "agent",
+            createdBy: user.id,
+          });
+          return { id: row.id };
+        },
+      };
       const result = await runAgent(
         {
           ...input,
@@ -151,7 +166,7 @@ export const agentRoute = new Hono<Env>()
             userId: user.id,
           },
         },
-        context,
+        agentContext,
       ).catch((err: unknown) => {
         if (err instanceof AgentConfigurationError) {
           throw new AppError(err.code, err.message, 500);
@@ -218,7 +233,20 @@ export const agentRoute = new Hono<Env>()
       }
 
       try {
-        const context = createWorkflowContext({ db: c.var.db, userId: user.id });
+        const workflow = createWorkflowContext({ db: c.var.db, userId: user.id });
+        const memoryRows = await memoriesRepo.listAll(c.var.db);
+        const agentContext: AgentContext = {
+          workflow,
+          memories: memoryRows.map((r) => ({ id: r.id, title: r.title, content: r.content })),
+          saveMemory: async (input) => {
+            const row = await memoriesRepo.insert(c.var.db, {
+              ...input,
+              source: "agent",
+              createdBy: user.id,
+            });
+            return { id: row.id };
+          },
+        };
         return await streamAgentChat(
           {
             conversationId,
@@ -230,7 +258,7 @@ export const agentRoute = new Hono<Env>()
             },
             source: "web",
           },
-          context,
+          agentContext,
           {
             onFinish: async ({ messages }) => {
               await replaceConversationMessages(c.var.db, {

@@ -8,6 +8,7 @@ import {
   type UIMessageStreamOnFinishCallback,
 } from "ai";
 import { buildAgentSystemPrompt } from "../prompts/agent.js";
+import type { Memory } from "../prompts/agent.js";
 import { triageTool } from "../tools/triage.js";
 import { reportDraftTool } from "../tools/report-draft.js";
 import { xlsxParseTool } from "../tools/xlsx-parse.js";
@@ -15,6 +16,7 @@ import { pdfParseTool } from "../tools/pdf-parse.js";
 import { xlsxCreateTool } from "../tools/xlsx-create.js";
 import { chartCreateTool } from "../tools/chart-create.js";
 import { fileSearchTool } from "../tools/file-search.js";
+import { saveMemoryTool, type SaveMemoryFn } from "../tools/save-memory.js";
 import type {
   AgentChatInput,
   AgentRunInput,
@@ -26,6 +28,12 @@ import type {
 import { getConfiguredModel } from "../providers/index.js";
 import type { WorkflowContext } from "@dx-template/workflow";
 
+export interface AgentContext {
+  workflow: WorkflowContext;
+  memories?: Memory[];
+  saveMemory?: SaveMemoryFn;
+}
+
 export interface RunAgentOptions {
   runId?: string;
   model?: string;
@@ -33,19 +41,20 @@ export interface RunAgentOptions {
 
 export async function runAgent(
   input: AgentRunInput,
-  context: WorkflowContext,
+  context: WorkflowContext | AgentContext,
   options: RunAgentOptions = {},
 ): Promise<AgentRunResult> {
   const runId = options.runId ?? crypto.randomUUID();
+  const agentCtx = "workflow" in context ? context : { workflow: context };
   let workflow: AgentRunResult["workflow"] | undefined;
   let workflowResult: AgentWorkflowResult | undefined;
   const toolTrace: AgentToolTrace[] = [];
 
   const { text } = await generateText({
     model: getConfiguredModel({ model: options.model }),
-    system: buildAgentSystemPrompt(input.source, input.actor),
+    system: buildAgentSystemPrompt(input.source, input.actor, agentCtx.memories),
     prompt: input.message,
-    tools: createTools(context, {
+    tools: createTools(agentCtx, {
       message: input.message,
       setWorkflow: (w, r) => {
         workflow = w;
@@ -69,16 +78,17 @@ export interface StreamAgentChatOptions {
 
 export async function streamAgentChat(
   input: StreamAgentChatInput,
-  context: WorkflowContext,
+  context: WorkflowContext | AgentContext,
   options: StreamAgentChatOptions = {},
 ): Promise<Response> {
   const message = getLatestUserMessageText(input.messages);
+  const agentCtx = "workflow" in context ? context : { workflow: context };
 
   const result = await streamText({
     model: getConfiguredModel({ model: input.model, provider: input.provider }),
-    system: buildAgentSystemPrompt(input.source, input.actor),
+    system: buildAgentSystemPrompt(input.source, input.actor, agentCtx.memories),
     messages: await convertToModelMessages(input.messages as UIMessage[]),
-    tools: createTools(context, { message, setWorkflow: () => {}, toolTrace: [] }),
+    tools: createTools(agentCtx, { message, setWorkflow: () => {}, toolTrace: [] }),
     stopWhen: stepCountIs(5),
   });
 
@@ -91,14 +101,14 @@ export async function streamAgentChat(
 }
 
 function createTools(
-  context: WorkflowContext,
+  context: AgentContext,
   state: {
     message: string;
     setWorkflow: (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
     toolTrace: AgentToolTrace[];
   },
 ) {
-  return {
+  const baseTools = {
     runTriage: triageTool({
       message: state.message,
       setWorkflow: state.setWorkflow,
@@ -109,30 +119,41 @@ function createTools(
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    parseXlsx: xlsxParseTool(context, {
+    parseXlsx: xlsxParseTool(context.workflow, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    parsePdf: pdfParseTool(context, {
+    parsePdf: pdfParseTool(context.workflow, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    createXlsx: xlsxCreateTool(context, {
+    createXlsx: xlsxCreateTool(context.workflow, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    createChart: chartCreateTool(context, {
+    createChart: chartCreateTool(context.workflow, {
       message: state.message,
       setWorkflow: state.setWorkflow,
       toolTrace: state.toolTrace,
     }),
-    searchFiles: fileSearchTool(context, {
+    searchFiles: fileSearchTool(context.workflow, {
       toolTrace: state.toolTrace,
     }),
   };
+
+  if (context.saveMemory) {
+    return {
+      ...baseTools,
+      saveMemory: saveMemoryTool(context.saveMemory, {
+        toolTrace: state.toolTrace,
+      }),
+    };
+  }
+
+  return baseTools;
 }
 
 function getLatestUserMessageText(messages: AgentChatInput["messages"]): string {

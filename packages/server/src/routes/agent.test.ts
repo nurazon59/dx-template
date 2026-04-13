@@ -27,6 +27,11 @@ vi.mock("../repositories/agent-conversations.js", () => ({
   replaceConversationMessages: vi.fn(),
 }));
 
+vi.mock("../repositories/memories.js", () => ({
+  listAll: vi.fn(),
+  insert: vi.fn(),
+}));
+
 import { app } from "../app.js";
 import { runAgent, streamAgentChat } from "@dx-template/agent";
 import { auth } from "../lib/auth.js";
@@ -36,6 +41,7 @@ import {
   listConversations,
   replaceConversationMessages,
 } from "../repositories/agent-conversations.js";
+import { listAll as listAllMemories } from "../repositories/memories.js";
 
 const mockRunAgent = vi.mocked(runAgent);
 const mockStreamAgentChat = vi.mocked(streamAgentChat);
@@ -44,6 +50,7 @@ const mockEnsureConversation = vi.mocked(ensureConversation);
 const mockFindConversation = vi.mocked(findConversation);
 const mockListConversations = vi.mocked(listConversations);
 const mockReplaceConversationMessages = vi.mocked(replaceConversationMessages);
+const mockListAllMemories = vi.mocked(listAllMemories);
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -75,6 +82,7 @@ beforeEach(() => {
     messages: [],
   });
   mockReplaceConversationMessages.mockResolvedValue(undefined);
+  mockListAllMemories.mockResolvedValue([]);
 });
 
 describe("GET /api/agent/conversations", () => {
@@ -214,7 +222,7 @@ describe("POST /api/agent/runs", () => {
         },
         source: "web",
       },
-      expect.objectContaining({ queries: expect.any(Object) }),
+      expect.objectContaining({ workflow: expect.any(Object) }),
     );
   });
 
@@ -317,7 +325,7 @@ describe("POST /api/agent/chat", () => {
         },
         source: "web",
       },
-      expect.objectContaining({ queries: expect.any(Object) }),
+      expect.objectContaining({ workflow: expect.any(Object) }),
       {
         onFinish: expect.any(Function),
       },

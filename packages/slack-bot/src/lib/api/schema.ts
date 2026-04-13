@@ -180,6 +180,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/memories": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getApiMemories"];
+    put?: never;
+    post: operations["postApiMemories"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/memories/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getApiMemoriesById"];
+    put: operations["putApiMemoriesById"];
+    post?: never;
+    delete: operations["deleteApiMemoriesById"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/uploads/images/presign": {
     parameters: {
       query?: never;
@@ -314,6 +346,28 @@ export interface components {
       /** Format: uri */
       downloadUrl: string;
       expiresIn: number;
+    };
+    Memory: {
+      /** Format: uuid */
+      id: string;
+      title: string;
+      content: string;
+      createdBy: string | null;
+      source: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CreateMemoryInput: {
+      title: string;
+      content: string;
+      /** @enum {string} */
+      source: "web" | "slack" | "agent";
+    };
+    UpdateMemoryInput: {
+      title?: string;
+      content?: string;
     };
     ImageUploadUrl: {
       /** Format: uri */
@@ -601,7 +655,8 @@ export interface operations {
                   | "parseXlsx"
                   | "parsePdf"
                   | "createXlsx"
-                  | "createChart";
+                  | "createChart"
+                  | "searchFiles";
                 /** @enum {string} */
                 workflow:
                   | "triage"
@@ -609,7 +664,8 @@ export interface operations {
                   | "xlsxParse"
                   | "pdfParse"
                   | "xlsxCreate"
-                  | "chartCreate";
+                  | "chartCreate"
+                  | "fileSearch";
                 input: unknown;
                 output: unknown;
               }[];
@@ -857,6 +913,221 @@ export interface operations {
       };
       /** @description ダウンロード URL 発行エラー */
       500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  getApiMemories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description メモリ一覧 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            memories: components["schemas"]["Memory"][];
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  postApiMemories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateMemoryInput"];
+      };
+    };
+    responses: {
+      /** @description メモリ作成成功 */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            memory: components["schemas"]["Memory"];
+          };
+        };
+      };
+      /** @description 入力値が不正 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  getApiMemoriesById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description メモリ詳細 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            memory: components["schemas"]["Memory"];
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description メモリが見つからない */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  putApiMemoriesById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateMemoryInput"];
+      };
+    };
+    responses: {
+      /** @description メモリ更新成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            memory: components["schemas"]["Memory"];
+          };
+        };
+      };
+      /** @description 入力値が不正 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description メモリが見つからない */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  deleteApiMemoriesById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description メモリ削除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @constant */
+            success: true;
+          };
+        };
+      };
+      /** @description 未認証 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description メモリが見つからない */
+      404: {
         headers: {
           [name: string]: unknown;
         };

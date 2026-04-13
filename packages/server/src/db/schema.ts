@@ -80,6 +80,16 @@ export const agentMessages = pgTable("agent_messages", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const memories = pgTable("memories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  createdBy: text("created_by").references(() => authUser.id, { onDelete: "set null" }),
+  source: text("source").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const files = pgTable("files", {
   id: uuid("id").primaryKey().defaultRandom(),
   objectKey: text("object_key").notNull().unique(),

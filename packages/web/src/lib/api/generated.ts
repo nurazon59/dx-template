@@ -147,6 +147,49 @@ export interface FileDownloadUrl {
   expiresIn: number;
 }
 
+export interface Memory {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  content: string;
+  createdBy: string | null;
+  source: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  createdAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
+  updatedAt: string;
+}
+
+export type CreateMemoryInputSource =
+  (typeof CreateMemoryInputSource)[keyof typeof CreateMemoryInputSource];
+
+export const CreateMemoryInputSource = {
+  web: "web",
+  slack: "slack",
+  agent: "agent",
+} as const;
+
+export interface CreateMemoryInput {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  title: string;
+  /** @minLength 1 */
+  content: string;
+  source: CreateMemoryInputSource;
+}
+
+export interface UpdateMemoryInput {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  title?: string;
+  /** @minLength 1 */
+  content?: string;
+}
+
 export interface ImageUploadUrl {
   uploadUrl: string;
   objectKey: string;
@@ -306,6 +349,7 @@ export const PostApiAgentRuns200TraceToolsItemToolName = {
   parsePdf: "parsePdf",
   createXlsx: "createXlsx",
   createChart: "createChart",
+  searchFiles: "searchFiles",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItemWorkflow =
@@ -318,6 +362,7 @@ export const PostApiAgentRuns200TraceToolsItemWorkflow = {
   pdfParse: "pdfParse",
   xlsxCreate: "xlsxCreate",
   chartCreate: "chartCreate",
+  fileSearch: "fileSearch",
 } as const;
 
 export type PostApiAgentRuns200TraceToolsItem = {
@@ -392,6 +437,26 @@ export type PostApiFilesPresign201 = {
 
 export type GetApiFilesByObjectKeyDownload200 = {
   download: FileDownloadUrl;
+};
+
+export type GetApiMemories200 = {
+  memories: Memory[];
+};
+
+export type PostApiMemories201 = {
+  memory: Memory;
+};
+
+export type GetApiMemoriesById200 = {
+  memory: Memory;
+};
+
+export type PutApiMemoriesById200 = {
+  memory: Memory;
+};
+
+export type DeleteApiMemoriesById200 = {
+  success: true;
 };
 
 export type PostApiUploadsImagesPresign201 = {
@@ -2435,6 +2500,802 @@ export function useGetApiFilesByObjectKeyDownloadSuspense<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export type getApiMemoriesResponse200 = {
+  data: GetApiMemories200;
+  status: 200;
+};
+
+export type getApiMemoriesResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiMemoriesResponseSuccess = getApiMemoriesResponse200 & {
+  headers: Headers;
+};
+export type getApiMemoriesResponseError = getApiMemoriesResponse401 & {
+  headers: Headers;
+};
+
+export type getApiMemoriesResponse = getApiMemoriesResponseSuccess | getApiMemoriesResponseError;
+
+export const getGetApiMemoriesUrl = () => {
+  return `/api/memories`;
+};
+
+export const getApiMemories = async (options?: RequestInit): Promise<getApiMemoriesResponse> => {
+  const res = await fetch(getGetApiMemoriesUrl(), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiMemoriesResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiMemoriesResponse;
+};
+
+export const getGetApiMemoriesQueryKey = () => {
+  return [`/api/memories`] as const;
+};
+
+export const getGetApiMemoriesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>>;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiMemoriesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiMemories>>> = ({ signal }) =>
+    getApiMemories({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiMemories>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiMemoriesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiMemories>>>;
+export type GetApiMemoriesQueryError = Error;
+
+export function useGetApiMemories<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiMemories>>,
+          TError,
+          Awaited<ReturnType<typeof getApiMemories>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemories<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiMemories>>,
+          TError,
+          Awaited<ReturnType<typeof getApiMemories>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemories<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiMemories<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiMemoriesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiMemoriesSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiMemoriesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiMemories>>> = ({ signal }) =>
+    getApiMemories({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiMemories>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiMemoriesSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiMemories>>
+>;
+export type GetApiMemoriesSuspenseQueryError = Error;
+
+export function useGetApiMemoriesSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiMemoriesSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemories>>,
+  TError = Error,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemories>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiMemoriesSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type postApiMemoriesResponse201 = {
+  data: PostApiMemories201;
+  status: 201;
+};
+
+export type postApiMemoriesResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type postApiMemoriesResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type postApiMemoriesResponseSuccess = postApiMemoriesResponse201 & {
+  headers: Headers;
+};
+export type postApiMemoriesResponseError = (
+  | postApiMemoriesResponse400
+  | postApiMemoriesResponse401
+) & {
+  headers: Headers;
+};
+
+export type postApiMemoriesResponse = postApiMemoriesResponseSuccess | postApiMemoriesResponseError;
+
+export const getPostApiMemoriesUrl = () => {
+  return `/api/memories`;
+};
+
+export const postApiMemories = async (
+  createMemoryInput: CreateMemoryInput,
+  options?: RequestInit,
+): Promise<postApiMemoriesResponse> => {
+  const res = await fetch(getPostApiMemoriesUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createMemoryInput),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postApiMemoriesResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as postApiMemoriesResponse;
+};
+
+export const getPostApiMemoriesMutationOptions = <TError = Error, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiMemories>>,
+    TError,
+    { data: CreateMemoryInput },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiMemories>>,
+  TError,
+  { data: CreateMemoryInput },
+  TContext
+> => {
+  const mutationKey = ["postApiMemories"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiMemories>>,
+    { data: CreateMemoryInput }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiMemories(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiMemoriesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiMemories>>
+>;
+export type PostApiMemoriesMutationBody = CreateMemoryInput;
+export type PostApiMemoriesMutationError = Error;
+
+export const usePostApiMemories = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiMemories>>,
+      TError,
+      { data: CreateMemoryInput },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiMemories>>,
+  TError,
+  { data: CreateMemoryInput },
+  TContext
+> => {
+  return useMutation(getPostApiMemoriesMutationOptions(options), queryClient);
+};
+
+export type getApiMemoriesByIdResponse200 = {
+  data: GetApiMemoriesById200;
+  status: 200;
+};
+
+export type getApiMemoriesByIdResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type getApiMemoriesByIdResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type getApiMemoriesByIdResponseSuccess = getApiMemoriesByIdResponse200 & {
+  headers: Headers;
+};
+export type getApiMemoriesByIdResponseError = (
+  | getApiMemoriesByIdResponse401
+  | getApiMemoriesByIdResponse404
+) & {
+  headers: Headers;
+};
+
+export type getApiMemoriesByIdResponse =
+  | getApiMemoriesByIdResponseSuccess
+  | getApiMemoriesByIdResponseError;
+
+export const getGetApiMemoriesByIdUrl = (id: string) => {
+  return `/api/memories/${id}`;
+};
+
+export const getApiMemoriesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getApiMemoriesByIdResponse> => {
+  const res = await fetch(getGetApiMemoriesByIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getApiMemoriesByIdResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getApiMemoriesByIdResponse;
+};
+
+export const getGetApiMemoriesByIdQueryKey = (id: string) => {
+  return [`/api/memories/${id}`] as const;
+};
+
+export const getGetApiMemoriesByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiMemoriesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiMemoriesById>>> = ({ signal }) =>
+    getApiMemoriesById(id, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiMemoriesById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiMemoriesByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiMemoriesById>>
+>;
+export type GetApiMemoriesByIdQueryError = Error;
+
+export function useGetApiMemoriesById<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiMemoriesById>>,
+          TError,
+          Awaited<ReturnType<typeof getApiMemoriesById>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesById<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiMemoriesById>>,
+          TError,
+          Awaited<ReturnType<typeof getApiMemoriesById>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesById<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiMemoriesById<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiMemoriesByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiMemoriesByIdSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiMemoriesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiMemoriesById>>> = ({ signal }) =>
+    getApiMemoriesById(id, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getApiMemoriesById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiMemoriesByIdSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiMemoriesById>>
+>;
+export type GetApiMemoriesByIdSuspenseQueryError = Error;
+
+export function useGetApiMemoriesByIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesByIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiMemoriesByIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiMemoriesByIdSuspense<
+  TData = Awaited<ReturnType<typeof getApiMemoriesById>>,
+  TError = Error,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getApiMemoriesById>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiMemoriesByIdSuspenseQueryOptions(id, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type putApiMemoriesByIdResponse200 = {
+  data: PutApiMemoriesById200;
+  status: 200;
+};
+
+export type putApiMemoriesByIdResponse400 = {
+  data: Error;
+  status: 400;
+};
+
+export type putApiMemoriesByIdResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type putApiMemoriesByIdResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type putApiMemoriesByIdResponseSuccess = putApiMemoriesByIdResponse200 & {
+  headers: Headers;
+};
+export type putApiMemoriesByIdResponseError = (
+  | putApiMemoriesByIdResponse400
+  | putApiMemoriesByIdResponse401
+  | putApiMemoriesByIdResponse404
+) & {
+  headers: Headers;
+};
+
+export type putApiMemoriesByIdResponse =
+  | putApiMemoriesByIdResponseSuccess
+  | putApiMemoriesByIdResponseError;
+
+export const getPutApiMemoriesByIdUrl = (id: string) => {
+  return `/api/memories/${id}`;
+};
+
+export const putApiMemoriesById = async (
+  id: string,
+  updateMemoryInput: UpdateMemoryInput,
+  options?: RequestInit,
+): Promise<putApiMemoriesByIdResponse> => {
+  const res = await fetch(getPutApiMemoriesByIdUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateMemoryInput),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: putApiMemoriesByIdResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as putApiMemoriesByIdResponse;
+};
+
+export const getPutApiMemoriesByIdMutationOptions = <TError = Error, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiMemoriesById>>,
+    TError,
+    { id: string; data: UpdateMemoryInput },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiMemoriesById>>,
+  TError,
+  { id: string; data: UpdateMemoryInput },
+  TContext
+> => {
+  const mutationKey = ["putApiMemoriesById"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiMemoriesById>>,
+    { id: string; data: UpdateMemoryInput }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return putApiMemoriesById(id, data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutApiMemoriesByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiMemoriesById>>
+>;
+export type PutApiMemoriesByIdMutationBody = UpdateMemoryInput;
+export type PutApiMemoriesByIdMutationError = Error;
+
+export const usePutApiMemoriesById = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiMemoriesById>>,
+      TError,
+      { id: string; data: UpdateMemoryInput },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiMemoriesById>>,
+  TError,
+  { id: string; data: UpdateMemoryInput },
+  TContext
+> => {
+  return useMutation(getPutApiMemoriesByIdMutationOptions(options), queryClient);
+};
+
+export type deleteApiMemoriesByIdResponse200 = {
+  data: DeleteApiMemoriesById200;
+  status: 200;
+};
+
+export type deleteApiMemoriesByIdResponse401 = {
+  data: Error;
+  status: 401;
+};
+
+export type deleteApiMemoriesByIdResponse404 = {
+  data: Error;
+  status: 404;
+};
+
+export type deleteApiMemoriesByIdResponseSuccess = deleteApiMemoriesByIdResponse200 & {
+  headers: Headers;
+};
+export type deleteApiMemoriesByIdResponseError = (
+  | deleteApiMemoriesByIdResponse401
+  | deleteApiMemoriesByIdResponse404
+) & {
+  headers: Headers;
+};
+
+export type deleteApiMemoriesByIdResponse =
+  | deleteApiMemoriesByIdResponseSuccess
+  | deleteApiMemoriesByIdResponseError;
+
+export const getDeleteApiMemoriesByIdUrl = (id: string) => {
+  return `/api/memories/${id}`;
+};
+
+export const deleteApiMemoriesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<deleteApiMemoriesByIdResponse> => {
+  const res = await fetch(getDeleteApiMemoriesByIdUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: deleteApiMemoriesByIdResponse["data"] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as deleteApiMemoriesByIdResponse;
+};
+
+export const getDeleteApiMemoriesByIdMutationOptions = <
+  TError = Error,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiMemoriesById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiMemoriesById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteApiMemoriesById"];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiMemoriesById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteApiMemoriesById(id, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteApiMemoriesByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiMemoriesById>>
+>;
+
+export type DeleteApiMemoriesByIdMutationError = Error;
+
+export const useDeleteApiMemoriesById = <TError = Error, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiMemoriesById>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiMemoriesById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteApiMemoriesByIdMutationOptions(options), queryClient);
+};
 
 export type postApiUploadsImagesPresignResponse201 = {
   data: PostApiUploadsImagesPresign201;

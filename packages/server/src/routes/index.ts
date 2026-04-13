@@ -7,6 +7,7 @@ import { ErrorSchema } from "../schemas/error.js";
 import { requireAuth } from "../middleware/auth.js";
 import { agentRoute } from "./agent.js";
 import { filesRoute } from "./files.js";
+import { memoriesRoute } from "./memories.js";
 import { uploadsRoute } from "./uploads.js";
 import { usersRoute } from "./users.js";
 
@@ -76,6 +77,7 @@ const app = new Hono<Env>()
   )
   .route("/agent", agentRoute)
   .route("/files", filesRoute)
+  .route("/memories", memoriesRoute)
   .route("/uploads", uploadsRoute)
   .route("/users", usersRoute);
 
