@@ -65,9 +65,7 @@ export function DropZone({ onFiles, accept, disabled, uploading }: DropZoneProps
     >
       <input ref={inputRef} type="file" multiple accept={accept} hidden onChange={handleChange} />
       <Text color="fg.muted" fontSize="sm">
-        {uploading
-          ? "アップロード中..."
-          : "ファイルをドラッグ&ドロップ、またはクリックして選択"}
+        {uploading ? "アップロード中..." : "ファイルをドラッグ&ドロップ、またはクリックして選択"}
       </Text>
     </Box>
   );

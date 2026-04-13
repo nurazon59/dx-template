@@ -90,7 +90,9 @@ function FilesPage() {
                 contentLength={file.contentLength}
                 createdAt={file.createdAt}
                 onPreview={() => void handlePreview(file.objectKey)}
-                onDelete={() => setDeleteTarget({ objectKey: file.objectKey, fileName: file.fileName })}
+                onDelete={() =>
+                  setDeleteTarget({ objectKey: file.objectKey, fileName: file.fileName })
+                }
               />
             ))}
           </Stack>

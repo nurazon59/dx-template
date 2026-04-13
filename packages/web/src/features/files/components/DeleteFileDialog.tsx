@@ -1,4 +1,13 @@
-import { Button, DialogActionTrigger, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle } from "@chakra-ui/react";
+import {
+  Button,
+  DialogActionTrigger,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from "@chakra-ui/react";
 
 interface DeleteFileDialogProps {
   open: boolean;

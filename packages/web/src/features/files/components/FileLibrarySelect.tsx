@@ -48,7 +48,11 @@ export function FileLibrarySelect({ onSelect, disabled }: FileLibrarySelectProps
   };
 
   return (
-    <PopoverRoot open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "top-start" }}>
+    <PopoverRoot
+      open={open}
+      onOpenChange={(e) => setOpen(e.open)}
+      positioning={{ placement: "top-start" }}
+    >
       <PopoverTrigger asChild>
         <IconButton aria-label="ライブラリから選択" variant="ghost" size="sm" disabled={disabled}>
           <FolderOpen size={16} />
