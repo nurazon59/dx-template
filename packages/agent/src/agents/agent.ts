@@ -20,9 +20,9 @@ import { saveMemoryTool, type SaveMemoryFn } from "../tools/save-memory.js";
 import type {
   AgentChatInput,
   AgentRunInput,
+  AgentRunMetrics,
   AgentRunResult,
   AgentToolTrace,
-  AgentWorkflowResult,
   StreamAgentChatInput,
 } from "../types.js";
 import { getConfiguredModel } from "../providers/index.js";
@@ -46,34 +46,32 @@ export async function runAgent(
 ): Promise<AgentRunResult> {
   const runId = options.runId ?? crypto.randomUUID();
   const agentCtx = "workflow" in context ? context : { workflow: context };
-  let workflow: AgentRunResult["workflow"] | undefined;
-  let workflowResult: AgentWorkflowResult | undefined;
-  const toolTrace: AgentToolTrace[] = [];
 
-  const { text } = await generateText({
+  const startTime = performance.now();
+
+  const result = await generateText({
     model: getConfiguredModel({ model: options.model }),
     system: buildAgentSystemPrompt(input.source, input.actor, agentCtx.memories),
     prompt: input.message,
-    tools: createTools(agentCtx, {
-      message: input.message,
-      setWorkflow: (w, r) => {
-        workflow = w;
-        workflowResult = r;
-      },
-      toolTrace,
-    }),
+    tools: createTools(agentCtx, { message: input.message }),
     stopWhen: stepCountIs(5),
   });
 
-  if (!workflow || !workflowResult) {
-    throw new Error("Agent did not dispatch a workflow");
-  }
+  const durationMs = Math.round(performance.now() - startTime);
 
-  return { runId, workflow, message: text, result: workflowResult, trace: { tools: toolTrace } };
+  return buildRunResult(runId, result as Parameters<typeof buildRunResult>[1], {
+    inputTokens: result.totalUsage.inputTokens ?? 0,
+    outputTokens: result.totalUsage.outputTokens ?? 0,
+    totalTokens: result.totalUsage.totalTokens ?? 0,
+    durationMs,
+    stepCount: result.steps.length,
+    model: options.model ?? "default",
+  });
 }
 
 export interface StreamAgentChatOptions {
   onFinish?: UIMessageStreamOnFinishCallback<UIMessage>;
+  onMetrics?: (metrics: AgentRunMetrics, toolTrace: AgentToolTrace[]) => void | Promise<void>;
 }
 
 export async function streamAgentChat(
@@ -83,13 +81,29 @@ export async function streamAgentChat(
 ): Promise<Response> {
   const message = getLatestUserMessageText(input.messages);
   const agentCtx = "workflow" in context ? context : { workflow: context };
+  const startTime = performance.now();
+  const toolTrace: AgentToolTrace[] = [];
 
   const result = await streamText({
     model: getConfiguredModel({ model: input.model, provider: input.provider }),
     system: buildAgentSystemPrompt(input.source, input.actor, agentCtx.memories),
     messages: await convertToModelMessages(input.messages as UIMessage[]),
-    tools: createTools(agentCtx, { message, setWorkflow: () => {}, toolTrace: [] }),
+    tools: createTools(agentCtx, { message }),
     stopWhen: stepCountIs(5),
+    onFinish: ({ totalUsage, steps }) => {
+      const durationMs = Math.round(performance.now() - startTime);
+      options.onMetrics?.(
+        {
+          inputTokens: totalUsage.inputTokens ?? 0,
+          outputTokens: totalUsage.outputTokens ?? 0,
+          totalTokens: totalUsage.totalTokens ?? 0,
+          durationMs,
+          stepCount: steps.length,
+          model: input.model ?? "default",
+        },
+        toolTrace,
+      );
+    },
   });
 
   return result.toUIMessageStreamResponse({
@@ -100,57 +114,79 @@ export async function streamAgentChat(
   });
 }
 
-function createTools(
-  context: AgentContext,
-  state: {
-    message: string;
-    setWorkflow: (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
-    toolTrace: AgentToolTrace[];
+/** result.steps からツール実行履歴と最終ワークフロー結果を組み立てる */
+function buildRunResult(
+  runId: string,
+  result: {
+    text: string;
+    steps: ReadonlyArray<{
+      toolCalls: ReadonlyArray<{ toolCallId: string; toolName: string; input?: unknown }>;
+      toolResults: ReadonlyArray<{ toolCallId: string; toolName: string; output: unknown }>;
+    }>;
   },
-) {
+  metrics: AgentRunMetrics,
+): AgentRunResult {
+  const toolTrace: AgentToolTrace[] = [];
+  let workflow: AgentRunResult["workflow"] | undefined;
+  let workflowResult: unknown;
+
+  const workflowNames = new Set<string>([
+    "triage",
+    "reportDraft",
+    "xlsxParse",
+    "pdfParse",
+    "xlsxCreate",
+    "chartCreate",
+  ]);
+
+  for (const step of result.steps) {
+    for (const tr of step.toolResults) {
+      const raw = tr.output as Record<string, unknown>;
+      const wf = raw?.workflow as string | undefined;
+      const tc = step.toolCalls.find((c) => c.toolCallId === tr.toolCallId);
+      const { workflow: _w, ...output } = raw;
+
+      toolTrace.push({
+        toolName: tr.toolName as AgentToolTrace["toolName"],
+        workflow: (wf ?? tr.toolName) as AgentToolTrace["workflow"],
+        input: tc?.input,
+        output,
+      });
+
+      if (wf && workflowNames.has(wf)) {
+        workflow = wf as AgentRunResult["workflow"];
+        workflowResult = output;
+      }
+    }
+  }
+
+  if (!workflow || !workflowResult) {
+    throw new Error("Agent did not dispatch a workflow");
+  }
+
+  return {
+    runId,
+    workflow,
+    message: result.text,
+    result: workflowResult as AgentRunResult["result"],
+    trace: { tools: toolTrace },
+    metrics,
+  };
+}
+
+function createTools(context: AgentContext, state: { message: string }) {
   const baseTools = {
-    runTriage: triageTool({
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    createReportDraft: reportDraftTool({
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    parseXlsx: xlsxParseTool(context.workflow, {
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    parsePdf: pdfParseTool(context.workflow, {
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    createXlsx: xlsxCreateTool(context.workflow, {
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    createChart: chartCreateTool(context.workflow, {
-      message: state.message,
-      setWorkflow: state.setWorkflow,
-      toolTrace: state.toolTrace,
-    }),
-    searchFiles: fileSearchTool(context.workflow, {
-      toolTrace: state.toolTrace,
-    }),
+    runTriage: triageTool({ message: state.message }),
+    createReportDraft: reportDraftTool({ message: state.message }),
+    parseXlsx: xlsxParseTool(context.workflow),
+    parsePdf: pdfParseTool(context.workflow),
+    createXlsx: xlsxCreateTool(context.workflow),
+    createChart: chartCreateTool(context.workflow),
+    searchFiles: fileSearchTool(context.workflow),
   };
 
   if (context.saveMemory) {
-    return {
-      ...baseTools,
-      saveMemory: saveMemoryTool(context.saveMemory, {
-        toolTrace: state.toolTrace,
-      }),
-    };
+    return { ...baseTools, saveMemory: saveMemoryTool(context.saveMemory) };
   }
 
   return baseTools;

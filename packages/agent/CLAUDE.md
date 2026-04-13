@@ -18,16 +18,19 @@ types.ts     # Zod スキーマ（AgentRunInput, AgentChatInput, AgentRunResult 
 
 ## 新規 Tool 追加
 
+ツールは副作用を持たない純粋関数として実装する。戻り値に `workflow` フィールドを含め、`agent.ts` の `buildRunResult` が `result.steps` から自動的にトレースとワークフロー結果を組み立てる。
+
 ```ts
 // tools/new-tool.ts
-export const newTool = (context: WorkflowContext, state) =>
+export const newTool = (context: WorkflowContext) =>
   tool({
     description: "...",
     inputSchema: z.object({ ... }),
     execute: async (input) => {
-      const result = await workflowRegistry.newWorkflow.run(input, context);
-      state.toolTrace.push(...);
-      return result;
+      const { jobId } = await dispatch("newWorkflow", input, context);
+      const job = jobStore.get(jobId);
+      const result = job?.result as NewWorkflowResult;
+      return { workflow: "newWorkflow" as const, ...result };
     },
   });
 ```

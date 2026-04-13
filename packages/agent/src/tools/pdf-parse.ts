@@ -6,14 +6,8 @@ import {
   dispatch,
   jobStore,
 } from "@dx-template/workflow";
-import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
 
-type SetWorkflow = (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
-
-export const pdfParseTool = (
-  context: WorkflowContext,
-  state: { message: string; setWorkflow: SetWorkflow; toolTrace: AgentToolTrace[] },
-) =>
+export const pdfParseTool = (context: WorkflowContext) =>
   tool({
     description: "アップロード済みのPDFファイルを読み取り、ページごとのテキストとして返す",
     inputSchema: z.object({
@@ -25,13 +19,6 @@ export const pdfParseTool = (
       const { jobId } = await dispatch("pdfParse", payload, context);
       const job = jobStore.get(jobId);
       const result = job?.result as PdfParseResult;
-      state.setWorkflow("pdfParse", result);
-      state.toolTrace.push({
-        toolName: "parsePdf",
-        workflow: "pdfParse",
-        input: { objectKey, pages },
-        output: result,
-      });
-      return result;
+      return { workflow: "pdfParse" as const, ...result };
     },
   });

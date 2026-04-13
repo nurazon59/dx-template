@@ -6,14 +6,8 @@ import {
   dispatch,
   jobStore,
 } from "@dx-template/workflow";
-import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
 
-type SetWorkflow = (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
-
-export const xlsxParseTool = (
-  context: WorkflowContext,
-  state: { message: string; setWorkflow: SetWorkflow; toolTrace: AgentToolTrace[] },
-) =>
+export const xlsxParseTool = (context: WorkflowContext) =>
   tool({
     description: "アップロード済みのExcelファイル(.xlsx)を読み取り、構造化データとして返す",
     inputSchema: z.object({
@@ -25,13 +19,6 @@ export const xlsxParseTool = (
       const { jobId } = await dispatch("xlsxParse", payload, context);
       const job = jobStore.get(jobId);
       const result = job?.result as XlsxParseResult;
-      state.setWorkflow("xlsxParse", result);
-      state.toolTrace.push({
-        toolName: "parseXlsx",
-        workflow: "xlsxParse",
-        input: { objectKey, sheetName },
-        output: result,
-      });
-      return result;
+      return { workflow: "xlsxParse" as const, ...result };
     },
   });

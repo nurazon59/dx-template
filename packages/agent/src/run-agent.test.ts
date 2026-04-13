@@ -5,20 +5,36 @@ vi.mock("ai", async () => {
   return {
     ...actual,
     generateText: vi.fn(async (options) => {
-      const triageResult = await options.tools.runTriage.execute(
-        { intent: "report", summary: "週次レポート作成の依頼" },
-        {} as never,
-      );
+      const triageArgs = { intent: "report", summary: "週次レポート作成の依頼" };
+      const triageResult = await options.tools.runTriage.execute(triageArgs, {} as never);
+
+      const reportArgs = {
+        title: "週次レポート草案",
+        summary: triageResult.summary,
+        audience: "事業企画部",
+      };
       const reportDraftResult = await options.tools.createReportDraft.execute(
-        {
-          title: "週次レポート草案",
-          summary: triageResult.summary,
-          audience: "事業企画部",
-        },
+        reportArgs,
         {} as never,
       );
+
       return {
         text: `report draft workflow を起動しました: ${reportDraftResult.title}`,
+        totalUsage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        steps: [
+          {
+            toolCalls: [{ toolCallId: "tc-1", toolName: "runTriage", input: triageArgs }],
+            toolResults: [{ toolCallId: "tc-1", toolName: "runTriage", output: triageResult }],
+          },
+          {
+            toolCalls: [
+              { toolCallId: "tc-2", toolName: "createReportDraft", input: reportArgs },
+            ],
+            toolResults: [
+              { toolCallId: "tc-2", toolName: "createReportDraft", output: reportDraftResult },
+            ],
+          },
+        ],
       };
     }),
     streamText: vi.fn(() => ({
@@ -63,7 +79,7 @@ describe("runAgent", () => {
       { runId: "run-test" },
     );
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       runId: "run-test",
       workflow: "reportDraft",
       message: "report draft workflow を起動しました: 週次レポート草案",
@@ -92,7 +108,6 @@ describe("runAgent", () => {
             toolName: "runTriage",
             workflow: "triage",
             input: {
-              message: "週次レポートを作って",
               intent: "report",
               summary: "週次レポート作成の依頼",
             },
@@ -107,7 +122,6 @@ describe("runAgent", () => {
             toolName: "createReportDraft",
             workflow: "reportDraft",
             input: {
-              message: "週次レポートを作って",
               title: "週次レポート草案",
               summary: "週次レポート作成の依頼",
               audience: "事業企画部",

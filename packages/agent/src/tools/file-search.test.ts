@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { WorkflowContext, FileSearchResult } from "@dx-template/workflow";
-import type { AgentToolTrace } from "../types.js";
 import { fileSearchTool } from "./file-search.js";
 
 function createMockContext(overrides: Partial<WorkflowContext> = {}): WorkflowContext {
@@ -29,27 +28,23 @@ describe("fileSearchTool", () => {
     const context = createMockContext({
       queries: { searchFiles: async () => files },
     });
-    const toolTrace: AgentToolTrace[] = [];
-    const t = fileSearchTool(context, { toolTrace });
+    const t = fileSearchTool(context);
 
     const result = await t.execute!({ query: "report" }, {} as never);
 
-    expect(result).toEqual({ files, count: 1 });
-    expect(toolTrace).toHaveLength(1);
-    expect(toolTrace[0]!.toolName).toBe("searchFiles");
+    expect(result).toEqual({ workflow: "fileSearch", files, count: 1 });
   });
 
   it("searchFilesが未設定のときは空配列とメッセージを返す", async () => {
     const context: WorkflowContext = { queries: {} };
-    const toolTrace: AgentToolTrace[] = [];
-    const t = fileSearchTool(context, { toolTrace });
+    const t = fileSearchTool(context);
 
     const result = await t.execute!({}, {} as never);
 
     expect(result).toEqual({
+      workflow: "fileSearch",
       files: [],
       message: "ファイル検索機能が利用できません",
     });
-    expect(toolTrace).toHaveLength(0);
   });
 });

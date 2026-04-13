@@ -6,14 +6,8 @@ import {
   dispatch,
   jobStore,
 } from "@dx-template/workflow";
-import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
 
-type SetWorkflow = (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
-
-export const chartCreateTool = (
-  context: WorkflowContext,
-  state: { message: string; setWorkflow: SetWorkflow; toolTrace: AgentToolTrace[] },
-) =>
+export const chartCreateTool = (context: WorkflowContext) =>
   tool({
     description:
       "データからチャート画像(PNG)を作成し、S3に保存してダウンロードURLを返す。棒グラフ・折れ線・円・ドーナツ・レーダー・散布図に対応",
@@ -42,13 +36,6 @@ export const chartCreateTool = (
       const { jobId } = await dispatch("chartCreate", payload, context);
       const job = jobStore.get(jobId);
       const result = job?.result as ChartCreateResult;
-      state.setWorkflow("chartCreate", result);
-      state.toolTrace.push({
-        toolName: "createChart",
-        workflow: "chartCreate",
-        input: { fileName, chartType },
-        output: result,
-      });
-      return result;
+      return { workflow: "chartCreate" as const, ...result };
     },
   });

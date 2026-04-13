@@ -7,20 +7,13 @@ import {
   dispatch,
   jobStore,
 } from "@dx-template/workflow";
-import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
-
-type SetWorkflow = (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
 
 export const TriageToolInputSchema = z.object({
   intent: TriageIntentSchema,
   summary: z.string(),
 });
 
-export const triageTool = (state: {
-  message: string;
-  setWorkflow: SetWorkflow;
-  toolTrace: AgentToolTrace[];
-}) =>
+export const triageTool = (state: { message: string }) =>
   tool({
     description: "ユーザー入力を triage workflow に渡し、初期 intent と summary を返す。",
     inputSchema: TriageToolInputSchema,
@@ -29,13 +22,6 @@ export const triageTool = (state: {
       const { jobId } = await dispatch("triage", payload);
       const job = jobStore.get(jobId);
       const result = job?.result as TriageWorkflowResult;
-      state.setWorkflow("triage", result);
-      state.toolTrace.push({
-        toolName: "runTriage",
-        workflow: "triage",
-        input: payload,
-        output: result,
-      });
-      return result;
+      return { workflow: "triage" as const, ...result };
     },
   });

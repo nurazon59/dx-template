@@ -6,14 +6,8 @@ import {
   dispatch,
   jobStore,
 } from "@dx-template/workflow";
-import type { AgentRunResult, AgentToolTrace, AgentWorkflowResult } from "../types.js";
 
-type SetWorkflow = (workflow: AgentRunResult["workflow"], result: AgentWorkflowResult) => void;
-
-export const xlsxCreateTool = (
-  context: WorkflowContext,
-  state: { message: string; setWorkflow: SetWorkflow; toolTrace: AgentToolTrace[] },
-) =>
+export const xlsxCreateTool = (context: WorkflowContext) =>
   tool({
     description: "データからExcelファイル(.xlsx)を作成し、S3に保存してダウンロードURLを返す",
     inputSchema: z.object({
@@ -35,13 +29,6 @@ export const xlsxCreateTool = (
       const { jobId } = await dispatch("xlsxCreate", payload, context);
       const job = jobStore.get(jobId);
       const result = job?.result as XlsxCreateResult;
-      state.setWorkflow("xlsxCreate", result);
-      state.toolTrace.push({
-        toolName: "createXlsx",
-        workflow: "xlsxCreate",
-        input: { fileName, sheetCount: sheets.length },
-        output: result,
-      });
-      return result;
+      return { workflow: "xlsxCreate" as const, ...result };
     },
   });
