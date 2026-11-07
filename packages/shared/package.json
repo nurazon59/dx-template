@@ -17,15 +17,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.65",
-    "chart.js": "^4.4.9",
+    "@napi-rs/canvas": "^1.1.0",
+    "chart.js": "^4.6.1",
     "exceljs": "^4.4.0",
-    "unpdf": "^1.4.0",
-    "zod": "^4.3.6"
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.4"
+    "@types/node": "^22",
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }

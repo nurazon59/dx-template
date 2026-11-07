@@ -349,6 +349,7 @@ describe("POST /api/agent/chat", () => {
       messages,
       isContinuation: false,
       isAborted: false,
+      outcome: { status: "completed" },
       responseMessage: messages[0]!,
       finishReason: "stop",
     });

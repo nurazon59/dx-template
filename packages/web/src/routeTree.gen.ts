@@ -9,19 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated.users'
-import { Route as AuthenticatedMetricsRouteImport } from './routes/_authenticated.metrics'
-import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated.memories'
-import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated.files'
-import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated.agents'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated._index'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated.agents'
+import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated.files'
+import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated.memories'
+import { Route as AuthenticatedMetricsRouteImport } from './routes/_authenticated.metrics'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated.users'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -29,28 +28,13 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMetricsRoute = AuthenticatedMetricsRouteImport.update({
-  id: '/metrics',
-  path: '/metrics',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
-  id: '/memories',
-  path: '/memories',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
-  id: '/files',
-  path: '/files',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/_index',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
@@ -58,8 +42,24 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/_index',
+const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMetricsRoute = AuthenticatedMetricsRouteImport.update({
+  id: '/metrics',
+  path: '/metrics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
@@ -137,11 +137,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -151,39 +151,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/users': {
-      id: '/_authenticated/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/metrics': {
-      id: '/_authenticated/metrics'
-      path: '/metrics'
-      fullPath: '/metrics'
-      preLoaderRoute: typeof AuthenticatedMetricsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/memories': {
-      id: '/_authenticated/memories'
-      path: '/memories'
-      fullPath: '/memories'
-      preLoaderRoute: typeof AuthenticatedMemoriesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/files': {
-      id: '/_authenticated/files'
-      path: '/files'
-      fullPath: '/files'
-      preLoaderRoute: typeof AuthenticatedFilesRouteImport
+    '/_authenticated/_index': {
+      id: '/_authenticated/_index'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/agents': {
@@ -193,11 +172,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_index': {
-      id: '/_authenticated/_index'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+    '/_authenticated/files': {
+      id: '/_authenticated/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/memories': {
+      id: '/_authenticated/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof AuthenticatedMemoriesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/metrics': {
+      id: '/_authenticated/metrics'
+      path: '/metrics'
+      fullPath: '/metrics'
+      preLoaderRoute: typeof AuthenticatedMetricsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
