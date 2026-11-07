@@ -19,9 +19,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -41,7 +41,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v5
 
       - name: Deploy with ecspresso
         working-directory: infra/ecspresso
@@ -53,9 +53,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -75,7 +75,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f packages/server/Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v5
 
       - name: Run database migrations
         working-directory: infra/ecspresso/server
@@ -97,15 +97,15 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v5
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm --filter @dx-template/web build
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
